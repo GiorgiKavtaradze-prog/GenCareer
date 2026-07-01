@@ -5,9 +5,28 @@ experience and **Pro** users unlock a **Vercel Eve**–powered **AI Career Agent
 optimizes profiles, matches jobs, drafts recruiter outreach, and builds career plans — all
 grounded in real data, with human approval before anything is saved.
 
-**Stack:** Next.js 16 (App Router, React 19) · Convex (data/backend) · Clerk (Auth +
-Billing) · Vercel Eve (backend AI agent, Sonnet 5 via AI Gateway) · shadcn/ui + Tailwind v4
-· Faker (seed).
+**Stack:** Next.js 16 (App Router, React 19) · Convex (data/backend + file storage) ·
+Clerk (Auth + Organizations + Billing) · Vercel Eve (backend AI agent, Sonnet 5 via AI
+Gateway) · shadcn/ui + Tailwind v4 · Faker (seed).
+
+## Platform features
+
+- **Two account types** — job seekers, and **companies** (Clerk **Organizations**):
+  "We're hiring" sign-up → org creation → company page → job posting.
+- **Company dashboard** (`/company`) — edit the company page, upload logo/cover, post /
+  edit / close / reopen / delete jobs, and move applicants through a hiring pipeline
+  (submitted → reviewed → interviewing → offer / rejected).
+- **Job applications** — apply with a note, withdraw, and track status at
+  `/applications`; companies are notified of new applicants, applicants of status
+  changes.
+- **Full profile customization** — custom avatar + cover image (Convex file storage),
+  pronouns, website/GitHub/X links, experience, **education**, skills with
+  **endorsements**, open-to-work.
+- **Social feed** — posts with images, edit/delete, comments (with delete), likes,
+  **follows** with follower counts and people suggestions.
+- **Notifications** — in-app bell with unread badge (likes, comments, follows,
+  endorsements, applications, status updates).
+- **Jobs board** — search + filters, saved-jobs tab, AI `% match` scores, apply inline.
 
 ---
 
@@ -49,6 +68,20 @@ in `.env.local` and generates `convex/_generated/`.
    ```
    Then copy the Pro plan id from `clerk api /billing/plans` into
    `NEXT_PUBLIC_CLERK_PRO_PLAN_ID` (looks like `cplan_…`).
+4. **Organizations** (powers "sign up as a company"): enable via the **Clerk CLI**
+   ```bash
+   clerk enable organizations
+   ```
+   or the Dashboard → **Organizations** → **Enable organizations**.
+5. **Org claims on the Convex JWT** *(recommended)*: so Convex can authorize company
+   mutations by organization membership, add custom claims to the `convex` JWT template
+   (Dashboard → JWT Templates → convex → Custom claims):
+   ```json
+   { "org_id": "{{org.id}}", "org_role": "{{org.role}}" }
+   ```
+   Without these claims the app still works — the user who created the company page is
+   its owner/admin — but org **teammates** won't be able to manage the company until the
+   claims are added.
 
 ## 4. Environment variables
 
@@ -149,10 +182,25 @@ deployment.
 ## Project layout
 
 ```
-app/(app)/        feed, jobs, companies, outreach, agent, pricing, profile
-app/(auth)/       custom sign-in / sign-up
+app/(app)/        feed, jobs, applications, companies, company (dashboard),
+                  onboarding/company, outreach, agent, pricing, profile (/in/[username])
+app/(auth)/       custom sign-in / sign-up (job seeker vs company chooser)
 agent/            Eve agent: agent.ts, instructions.md, channels/eve.ts, tools/*
-convex/           schema, queries/mutations, ai.ts (internal), eve.ts (bridge), seed.ts, demo.ts
-components/       shared UI (feed, jobs, ai, layout) + shadcn/ui
+convex/           schema, queries/mutations (users, profiles, feed, jobs, companies,
+                  applications, network, notifications, files, drafts), ai.ts (internal),
+                  eve.ts (bridge), seed.ts, demo.ts
+components/       shared UI (feed, jobs, company, profile, ai, layout) + shadcn/ui
 lib/              entitlements (server), ai-features, format helpers
 ```
+
+## The company flow (Clerk Organizations)
+
+1. Landing page → **Sign up as a company** (`/sign-up?type=company`).
+2. After sign-up you land on `/onboarding/company`, which
+   **creates a Clerk Organization** (via `useOrganizationList().createOrganization`),
+   sets it active, and creates the linked Convex `companies` row (`orgId`).
+3. `/company` is the org-gated dashboard: company profile + images, job CRUD, and the
+   applicant pipeline. Convex mutations authorize via the JWT's `org_id` claim (org
+   members) or page ownership (creator fallback).
+4. Invite teammates from the **organization switcher** in the top nav — any member of
+   the org can manage the company once the org claims are on the JWT template.

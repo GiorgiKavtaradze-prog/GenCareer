@@ -645,7 +645,7 @@ export const run = internalMutation({
       const name = `${firstName} ${lastName}`;
 
       // Deterministic, unique username slug.
-      let baseUsername = faker.helpers
+      const baseUsername = faker.helpers
         .slugify(`${firstName}-${lastName}`)
         .toLowerCase();
       let username = baseUsername;
