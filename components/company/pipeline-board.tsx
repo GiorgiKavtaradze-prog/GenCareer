@@ -52,17 +52,24 @@ export function PipelineBoard({
   applicants,
   jobTitle,
   isPro,
+  showRejected = true,
   onMove,
   onOpen,
 }: {
   applicants: PipelineApplicant[];
   jobTitle: Map<string, string>;
   isPro: boolean;
+  /** When false, the rejected column is hidden entirely. */
+  showRejected?: boolean;
   onMove: (applicationId: Id<"applications">, status: PipelineStage) => void;
   onOpen?: (applicationId: Id<"applications">) => void;
 }) {
   const [dragging, setDragging] = useState<Id<"applications"> | null>(null);
   const [dropTarget, setDropTarget] = useState<PipelineStage | null>(null);
+
+  const stages = showRejected
+    ? STAGES
+    : STAGES.filter((s) => s !== "rejected");
 
   const byStage = new Map<PipelineStage, PipelineApplicant[]>(
     STAGES.map((s) => [s, []]),
@@ -73,8 +80,14 @@ export function PipelineBoard({
 
   return (
     <div className="-mx-1 overflow-x-auto px-1 pb-1">
-      <div className="grid min-w-[880px] grid-cols-5 gap-2">
-        {STAGES.map((stage) => {
+      <div
+        className={`grid gap-2 ${
+          stages.length === 5
+            ? "min-w-[880px] grid-cols-5"
+            : "min-w-[704px] grid-cols-4"
+        }`}
+      >
+        {stages.map((stage) => {
           const locked = !isPro && PRO_STAGES.has(stage);
           const cards = byStage.get(stage) ?? [];
           const isTarget = dropTarget === stage && dragging !== null && !locked;

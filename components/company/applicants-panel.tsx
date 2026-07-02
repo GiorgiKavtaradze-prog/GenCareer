@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { useQuery, useAction } from "convex/react";
 import { toast } from "sonner";
-import { Columns3, Lock, Rows3, Sparkles, Users } from "lucide-react";
+import { Columns3, Eye, EyeOff, Lock, Rows3, Sparkles, Users } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { UserAvatar } from "@/components/user-avatar";
@@ -78,6 +78,7 @@ export function ApplicantsPanel({
   const [jobFilter, setJobFilter] = useState<string>("all");
   const [view, setView] = useState<"board" | "list">("board");
   const [detailId, setDetailId] = useState<Id<"applications"> | null>(null);
+  const [showRejected, setShowRejected] = useState(false);
   const applicants = useQuery(api.applications.getApplicantsForCompany, {
     companyId,
     jobId: jobFilter === "all" ? undefined : (jobFilter as Id<"jobs">),
@@ -85,6 +86,15 @@ export function ApplicantsPanel({
   const updateStatus = useAction(api.applications.updateStatus);
 
   const jobTitle = new Map(jobs.map((j) => [j._id as string, j.title]));
+
+  // Rejected/withdrawn are hidden by default to keep the pipeline focused.
+  const closedCount = (applicants ?? []).filter(
+    (a) => a.status === "rejected" || a.status === "withdrawn",
+  ).length;
+  const visibleApplicants = (applicants ?? []).filter(
+    (a) =>
+      showRejected || (a.status !== "rejected" && a.status !== "withdrawn"),
+  );
 
   const moveTo = async (
     applicationId: Id<"applications">,
@@ -115,6 +125,25 @@ export function ApplicantsPanel({
           )}
         </h2>
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="xs"
+            className="gap-1"
+            onClick={() => setShowRejected((s) => !s)}
+            aria-pressed={showRejected}
+          >
+            {showRejected ? (
+              <EyeOff className="h-3.5 w-3.5" />
+            ) : (
+              <Eye className="h-3.5 w-3.5" />
+            )}
+            {showRejected ? "Hide rejected" : "Show rejected"}
+            {!showRejected && closedCount > 0 && (
+              <Badge variant="secondary" className="h-4 px-1 font-normal">
+                {closedCount}
+              </Badge>
+            )}
+          </Button>
           <Select value={jobFilter} onValueChange={(v) => setJobFilter(v ?? "all")}>
             <SelectTrigger className="h-8 w-52">
               <SelectValue placeholder="All jobs" />
@@ -167,15 +196,21 @@ export function ApplicantsPanel({
         />
       ) : view === "board" ? (
         <PipelineBoard
-          applicants={applicants.filter((a) => a.status !== "withdrawn")}
+          applicants={visibleApplicants.filter((a) => a.status !== "withdrawn")}
           jobTitle={jobTitle}
           isPro={isPro}
+          showRejected={showRejected}
           onMove={moveTo}
           onOpen={setDetailId}
         />
+      ) : visibleApplicants.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          All applicants here are rejected or withdrawn — use “Show rejected”
+          to see them.
+        </p>
       ) : (
         <div className="space-y-3">
-          {applicants.map((app) => (
+          {visibleApplicants.map((app) => (
             <div
               key={app._id}
               className="cursor-pointer rounded-lg border p-3 transition-colors hover:border-primary/40"
