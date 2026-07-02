@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { toast } from "sonner";
-import { Users } from "lucide-react";
+import { Lock, Sparkles, Users } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { UserAvatar } from "@/components/user-avatar";
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { timeAgo } from "@/lib/format";
+import { COMPANY_PRO_PLAN } from "@/lib/ai-features";
 
 const PIPELINE = [
   "submitted",
@@ -27,6 +29,9 @@ const PIPELINE = [
   "offer",
   "rejected",
 ] as const;
+
+/** Pipeline stages that require the Company Pro (org) plan. */
+const PRO_STAGES = new Set<string>(["interviewing", "offer"]);
 
 export const APPLICATION_STATUS_LABEL: Record<string, string> = {
   submitted: "Submitted",
@@ -61,6 +66,8 @@ export function ApplicantsPanel({
   companyId: Id<"companies">;
   jobs: { _id: Id<"jobs">; title: string }[];
 }) {
+  const { has } = useAuth();
+  const isPro = has?.({ plan: COMPANY_PRO_PLAN }) ?? false;
   const [jobFilter, setJobFilter] = useState<string>("all");
   const applicants = useQuery(api.applications.getApplicantsForCompany, {
     companyId,
@@ -78,6 +85,12 @@ export function ApplicantsPanel({
           Applicants
           {applicants !== undefined && (
             <Badge variant="secondary">{applicants.length}</Badge>
+          )}
+          {!isPro && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <Lock className="h-3 w-3" />
+              Free: review &amp; reject only
+            </Badge>
           )}
         </h2>
         <Select value={jobFilter} onValueChange={(v) => setJobFilter(v ?? "all")}>
@@ -157,11 +170,15 @@ export function ApplicantsPanel({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {PIPELINE.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {APPLICATION_STATUS_LABEL[s]}
-                        </SelectItem>
-                      ))}
+                      {PIPELINE.map((s) => {
+                        const locked = !isPro && PRO_STAGES.has(s);
+                        return (
+                          <SelectItem key={s} value={s} disabled={locked}>
+                            {APPLICATION_STATUS_LABEL[s]}
+                            {locked ? " — Pro" : ""}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -181,14 +198,21 @@ export function ApplicantsPanel({
                 </p>
               )}
 
-              {app.skills.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {app.skills.slice(0, 8).map((s) => (
-                    <Badge key={s._id} variant="outline" className="font-normal">
-                      {s.name}
-                    </Badge>
-                  ))}
-                </div>
+              {isPro ? (
+                app.skills.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {app.skills.slice(0, 8).map((s) => (
+                      <Badge key={s._id} variant="outline" className="font-normal">
+                        {s.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  Candidate skill insights are a Company Pro feature.
+                </p>
               )}
             </div>
           ))}

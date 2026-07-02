@@ -3,6 +3,7 @@ import { query, mutation } from "./_generated/server";
 import {
   getUserByIdentity,
   assertCompanyAdmin,
+  orgHasCompanyPro,
   notify,
   applicationDocValidator,
   applicationStatusValidator,
@@ -144,6 +145,9 @@ const applicantValidator = v.object({
  * Applicants for one job (or the whole company when jobId is omitted),
  * newest first, enriched with the applicant's public profile. Caller must
  * administer the company.
+ *
+ * Org billing: candidate skill insights are a Company Pro feature — free
+ * companies get an empty `skills` array (the UI shows an upgrade hint).
  */
 export const getApplicantsForCompany = query({
   args: {
@@ -153,6 +157,7 @@ export const getApplicantsForCompany = query({
   returns: v.array(applicantValidator),
   handler: async (ctx, args) => {
     await assertCompanyAdmin(ctx, args.companyId);
+    const pro = await orgHasCompanyPro(ctx);
 
     let applications;
     if (args.jobId !== undefined) {
@@ -181,7 +186,7 @@ export const getApplicantsForCompany = query({
                 .withIndex("by_userId", (q) => q.eq("userId", user._id))
                 .unique();
         const skills =
-          user === null
+          user === null || !pro
             ? []
             : await ctx.db
                 .query("skills")
@@ -210,6 +215,10 @@ export const getApplicantsForCompany = query({
 /**
  * Move an application through the pipeline. Caller must administer the
  * company; the applicant gets a status notification.
+ *
+ * Org billing: the free tier can mark applicants reviewed/rejected; the
+ * interview and offer stages require Company Pro (checked via the org's
+ * billing claims on the JWT).
  */
 export const updateStatus = mutation({
   args: {
@@ -223,6 +232,14 @@ export const updateStatus = mutation({
     const { me } = await assertCompanyAdmin(ctx, app.companyId);
     if (args.status === "withdrawn") {
       throw new Error("Only the applicant can withdraw an application");
+    }
+    if (
+      (args.status === "interviewing" || args.status === "offer") &&
+      !(await orgHasCompanyPro(ctx))
+    ) {
+      throw new Error(
+        "Interview and offer stages are a Company Pro feature — upgrade your organization to unlock the full pipeline.",
+      );
     }
     if (app.status === args.status) return null;
 

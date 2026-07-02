@@ -16,9 +16,11 @@ Gateway) · shadcn/ui + Tailwind v4 · Faker (seed).
 - **Company dashboard** (`/company`) — edit the company page, upload logo/cover, post /
   edit / close / reopen / delete jobs, and move applicants through a hiring pipeline
   (submitted → reviewed → interviewing → offer / rejected).
-- **Org-based billing** — Clerk Billing for **organizations**: Company Free allows 3
-  open jobs; **Company Pro** ($99/mo, billed to the org, shared by all teammates)
-  removes the cap. Upgrade from the dashboard or `/pricing`.
+- **Two-sided billing (B2C + B2B)** — personal **Pro** unlocks the AI Career Agent
+  (B2C); organization **Company Pro** ($99/mo, billed to the Clerk org, shared by all
+  teammates) unlocks unlimited job posts, the **interview/offer pipeline stages**, and
+  **candidate skill insights** (B2B). Company Free: 3 open jobs, view applicants,
+  mark reviewed/rejected. All gates enforced server-side in Convex.
 - **Job applications** — apply with a note, withdraw, and track status at
   `/applications`; companies are notified of new applicants, applicants of status
   changes.
@@ -85,8 +87,15 @@ in `.env.local` and generates `convex/_generated/`.
    (or Dashboard → Billing → enable for organizations → create a **Company Pro**
    plan with slug `company_pro`, $99/mo). Copy the plan id from
    `clerk api /billing/plans` into `NEXT_PUBLIC_CLERK_COMPANY_PLAN_ID`.
-   Free companies can keep **3** jobs open; Company Pro removes the cap. The
-   subscription belongs to the **organization**, so every teammate shares it.
+   The subscription belongs to the **organization**, so every teammate shares it.
+   What it gates (all enforced in Convex):
+   | | Company Free | Company Pro |
+   | --- | --- | --- |
+   | Open job posts | up to 3 | unlimited |
+   | View applicants & cover notes | ✓ | ✓ |
+   | Mark reviewed / rejected | ✓ | ✓ |
+   | Interview & offer stages | — | ✓ |
+   | Candidate skill insights | — | ✓ |
    To let Convex enforce the cap server-side, add the billing claim to the
    `convex` JWT template alongside the org claims:
    ```json

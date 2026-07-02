@@ -27,14 +27,15 @@ const PRO_FEATURES = [
 const COMPANY_FREE_FEATURES = [
   "Company page with logo & cover",
   `Up to ${FREE_OPEN_JOB_LIMIT} open job posts`,
-  "Applicant list with profiles",
+  "View applicants, profiles & cover notes",
+  "Mark applicants reviewed or rejected",
   "Invite teammates via your organization",
 ];
 
 const COMPANY_PRO_FEATURES = [
   "Unlimited open job posts",
-  "Full applicant pipeline (review → offer)",
-  "Priority placement on the Jobs board",
+  "Full pipeline: interview & offer stages",
+  "Candidate skill insights on every applicant",
   "Billing shared across your organization",
 ];
 
@@ -50,10 +51,21 @@ export default async function PricingPage() {
     <div className="mx-auto max-w-4xl py-6">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Unlock your AI Career Agent
+          Plans for both sides of the hire
         </h1>
         <p className="mt-2 text-muted-foreground">
-          CareerConnect is free to use. Go Pro to put an AI agent to work on your career.
+          Personal plans for job seekers, organization plans for companies.
+        </p>
+      </div>
+
+      {/* ── For job seekers (personal billing) ────────────────────── */}
+      <div className="mb-8 text-center">
+        <h2 className="flex items-center justify-center gap-2 text-2xl font-semibold tracking-tight">
+          <Sparkles className="h-6 w-6 text-primary" />
+          For job seekers
+        </h2>
+        <p className="mt-2 text-muted-foreground">
+          Free to use. Go Pro to put an AI agent to work on your career.
         </p>
       </div>
 

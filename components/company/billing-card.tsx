@@ -71,8 +71,8 @@ export function CompanyBillingCard({ openJobs }: { openJobs: number }) {
           </p>
           <p className="text-xs text-muted-foreground">
             {atCap
-              ? "You've hit the free limit — upgrade for unlimited job posts."
-              : "Upgrade to Company Pro for unlimited job posts."}
+              ? "You've hit the free job limit — upgrade for unlimited posts, the interview/offer pipeline, and candidate insights."
+              : "Upgrade for unlimited job posts, the interview/offer pipeline, and candidate skill insights."}
           </p>
         </div>
       </div>
