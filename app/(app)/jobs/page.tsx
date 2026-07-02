@@ -16,6 +16,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { JobCard, MatchBadge } from "@/components/jobs/job-card";
+import { CompanyLogo } from "@/components/company-logo";
 import { ApplyButton } from "@/components/jobs/apply-dialog";
 import { AiActionButton } from "@/components/ai/ai-action-button";
 import { EmptyState } from "@/components/empty-state";
@@ -72,6 +73,14 @@ function JobsInner() {
     api.jobs.getSavedJobs,
     tab === "saved" ? {} : "skip"
   );
+  // Companies matching the search term, shown above the job results.
+  const searchMatches = useQuery(
+    api.search.global,
+    tab === "browse" && search.trim().length >= 2
+      ? { q: search.trim() }
+      : "skip"
+  );
+  const companyMatches = searchMatches?.companies ?? [];
 
   const jobs = tab === "saved" ? savedJobs : browseJobs;
 
@@ -147,6 +156,33 @@ function JobsInner() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        )}
+
+        {tab === "browse" && companyMatches.length > 0 && (
+          <div className="rounded-xl border bg-card p-3">
+            <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Companies
+            </p>
+            <div className="space-y-0.5">
+              {companyMatches.map((c) => (
+                <Link
+                  key={c._id}
+                  href={`/companies/${c.slug}`}
+                  className="flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-muted"
+                >
+                  <CompanyLogo name={c.name} src={c.logoUrl} className="h-8 w-8" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">
+                      {c.name}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {c.industry}
+                    </span>
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         )}
