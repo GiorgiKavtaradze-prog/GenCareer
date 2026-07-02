@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
-import { useOrganization, useOrganizationList } from "@clerk/nextjs";
+import { OrganizationList, useOrganization } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { Building2, Loader2, Rocket } from "lucide-react";
 import { api } from "@/convex/_generated/api";
@@ -22,15 +22,16 @@ import {
 const COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
 
 /**
- * Company onboarding: creates a Clerk Organization (so teammates can be
- * invited and manage the same company) and the linked Convex company page.
- * Reuses the already-active organization when one exists (e.g. created via
- * the org switcher).
+ * Company onboarding, org-first:
+ * 1. No active Clerk Organization → Clerk's <OrganizationList/> handles
+ *    creating one or joining via invitation/suggestion.
+ * 2. Active org but no linked company page → publish the Convex company
+ *    page tied to that org (teammates co-manage it via org membership).
+ * 3. Company already linked → straight to the dashboard.
  */
 export default function CompanyOnboardingPage() {
   const router = useRouter();
-  const { organization: activeOrg } = useOrganization();
-  const { createOrganization, setActive, isLoaded } = useOrganizationList();
+  const { organization: activeOrg, isLoaded: orgLoaded } = useOrganization();
   const myCompany = useQuery(api.companies.getMyCompany, {});
   const createCompany = useMutation(api.companies.createCompany);
 
@@ -49,7 +50,46 @@ export default function CompanyOnboardingPage() {
   }, [hasCompany, router]);
   if (hasCompany) return null;
 
-  const companyName = name.trim() || activeOrg?.name || "";
+  if (!orgLoaded || myCompany === undefined) {
+    return (
+      <div className="mx-auto flex max-w-xl justify-center py-16">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Step 1 — no organization yet: Clerk's native create/join UI (handles
+  // new orgs, invitations, and suggestions). Both paths land back here.
+  if (!activeOrg) {
+    return (
+      <div className="mx-auto max-w-xl">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Building2 className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold">Set up your organization</h1>
+            <p className="text-sm text-muted-foreground">
+              Create an organization or accept an invitation — your company
+              page and job posts hang off it, and teammates manage them with
+              you.
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <OrganizationList
+            hidePersonal
+            afterCreateOrganizationUrl="/onboarding/company"
+            afterSelectOrganizationUrl="/onboarding/company"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Narrowed copy so the submit closure keeps the non-null type.
+  const org = activeOrg;
+  const companyName = name.trim() || org.name;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,24 +103,7 @@ export default function CompanyOnboardingPage() {
     }
     setSubmitting(true);
     try {
-      // 1. Ensure a Clerk Organization. Reuse the active one, otherwise
-      //    create one named after the company.
-      let orgId = activeOrg?.id;
-      if (!orgId && isLoaded && createOrganization) {
-        try {
-          const org = await createOrganization({ name: companyName });
-          orgId = org.id;
-          await setActive({ organization: org.id });
-        } catch {
-          // Organizations may be disabled on this Clerk instance — the
-          // company page still works via page ownership.
-          toast.info(
-            "Couldn't create a Clerk organization (is the Organizations feature enabled?). Your account will own the company page instead.",
-          );
-        }
-      }
-
-      // 2. Create the linked company page in Convex.
+      // Step 2 — publish the company page linked to the active org.
       await createCompany({
         name: companyName,
         industry: industry.trim(),
@@ -88,7 +111,7 @@ export default function CompanyOnboardingPage() {
         location: location.trim(),
         about: about.trim(),
         websiteUrl: website.trim() || undefined,
-        orgId,
+        orgId: org.id,
       });
 
       toast.success("Company created — welcome aboard!");
@@ -108,10 +131,10 @@ export default function CompanyOnboardingPage() {
           <Building2 className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold">Set up your company</h1>
+          <h1 className="text-xl font-semibold">Publish your company page</h1>
           <p className="text-sm text-muted-foreground">
-            Create your organization, publish a company page, and start posting
-            jobs.
+            “{activeOrg.name}” is ready — add the public details and start
+            posting jobs.
           </p>
         </div>
       </div>
@@ -126,7 +149,7 @@ export default function CompanyOnboardingPage() {
             id="c-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={activeOrg?.name ?? "e.g. Acme Robotics"}
+            placeholder={activeOrg.name}
           />
           {activeOrg && !name.trim() && (
             <p className="text-xs text-muted-foreground">
