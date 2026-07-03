@@ -4,36 +4,12 @@ import { internalMutation } from "./_generated/server";
 import { MutationCtx } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 
-/**
- * Repeatable network seed.
- *
- * Run with:  npx convex run seed:run
- *
- * Idempotent: wipes every table, then re-inserts a deterministic network
- * (faker is seeded with 12345). Insert order respects foreign keys:
- *   companies -> recruiters -> jobs -> users -> profiles/experiences/education/
- *   skills -> skillEndorsements -> posts -> comments/likes -> follows
- *   -> applications.
- *
- * Every job is linked to a company (companyId), every experience to its
- * seeded company where one matches, every application to a (user, job,
- * company) triple, and every endorsement count is backed by real
- * skillEndorsements rows.
- *
- * Volume (a few thousand rows total) fits comfortably inside a single
- * mutation's read/write budget.
- */
-
-// ── Canonical constants ──────────────────────────────────────────────
-
-/** dicebear helpers keep imageUrl / logoUrl deterministic per seed. */
 const logoFor = (slug: string) =>
   `https://api.dicebear.com/9.x/glass/svg?seed=${encodeURIComponent(slug)}`;
 const avatarFor = (username: string) =>
   `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(
     username,
   )}`;
-/** Deterministic photographic post/cover images. */
 const photoFor = (seed: string, w = 800, h = 450) =>
   `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
 
@@ -47,11 +23,6 @@ type SeedCompany = {
   websiteUrl?: string;
 };
 
-/**
- * 13 companies. First is the Vercel-inspired "Vercept" (frontend/AI infra);
- * "Synthiel AI" and "Loomcast" are the AI startups referenced by the strong
- * Alex-storyline jobs.
- */
 const COMPANIES: SeedCompany[] = [
   {
     name: "Vercept",

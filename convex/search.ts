@@ -4,11 +4,6 @@ import { getProfileForUser } from "./model";
 
 const MAX_PER_GROUP = 5;
 
-/**
- * Global typeahead search across companies, people, and open jobs.
- * Case-insensitive substring matching, capped per group — the jobs page
- * remains the "see all results" surface for deeper queries.
- */
 export const global = query({
   args: { q: v.string() },
   returns: v.object({
@@ -59,7 +54,9 @@ export const global = query({
 
     const allUsers = await ctx.db.query("users").collect();
     const matchedUsers = allUsers
-      .filter((u) => [u.name, u.username].join(" ").toLowerCase().includes(term))
+      .filter((u) =>
+        [u.name, u.username].join(" ").toLowerCase().includes(term),
+      )
       .slice(0, MAX_PER_GROUP);
     const people = await Promise.all(
       matchedUsers.map(async (u) => {

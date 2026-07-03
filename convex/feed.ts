@@ -15,7 +15,6 @@ const feedItemValidator = v.object({
   likedByMe: v.boolean(),
 });
 
-/** Build the embedded author summary for a post's author. */
 async function authorSummary(ctx: QueryCtx, authorId: Id<"users">) {
   const author = await ctx.db.get(authorId);
   if (author === null) return null;
@@ -32,10 +31,6 @@ async function authorSummary(ctx: QueryCtx, authorId: Id<"users">) {
   };
 }
 
-/**
- * Newest posts first, each enriched with an author summary and whether the
- * current user liked it. Uses the built-in by_creation_time index.
- */
 export const getFeed = query({
   args: { limit: v.optional(v.number()) },
   returns: v.array(feedItemValidator),
@@ -74,12 +69,10 @@ const kindValidator = v.union(
   v.literal("launch"),
 );
 
-/** Create a post authored by the current user. Defaults kind to "update". */
 export const createPost = mutation({
   args: {
     content: v.string(),
     kind: v.optional(kindValidator),
-    // Image uploaded via files.generateUploadUrl; resolved to a URL here.
     imageStorageId: v.optional(v.id("_storage")),
   },
   returns: v.id("posts"),
@@ -104,13 +97,11 @@ export const createPost = mutation({
   },
 });
 
-/** Edit the caller's own post (content/kind; optionally replace the image). */
 export const updatePost = mutation({
   args: {
     postId: v.id("posts"),
     content: v.string(),
     kind: v.optional(kindValidator),
-    // undefined == keep current image; null == remove; storageId == replace
     imageStorageId: v.optional(v.union(v.id("_storage"), v.null())),
   },
   returns: v.null(),
@@ -131,13 +122,10 @@ export const updatePost = mutation({
     };
 
     if (args.imageStorageId !== undefined) {
-      // Replace or remove: delete the old uploaded file either way.
       if (post.imageStorageId !== undefined) {
         try {
           await ctx.storage.delete(post.imageStorageId);
-        } catch {
-          // already gone
-        }
+        } catch {}
       }
       if (args.imageStorageId === null) {
         patch.imageUrl = undefined;
@@ -155,7 +143,6 @@ export const updatePost = mutation({
   },
 });
 
-/** Delete the caller's own post, its comments, likes, and uploaded image. */
 export const deletePost = mutation({
   args: { postId: v.id("posts") },
   returns: v.null(),
@@ -173,7 +160,6 @@ export const deletePost = mutation({
       .collect();
     for (const c of comments) await ctx.db.delete(c._id);
 
-    // likes has no by_post-only index; by_post_and_user is prefixed by postId.
     const likes = await ctx.db
       .query("likes")
       .withIndex("by_post_and_user", (q) => q.eq("postId", post._id))
@@ -183,9 +169,7 @@ export const deletePost = mutation({
     if (post.imageStorageId !== undefined) {
       try {
         await ctx.storage.delete(post.imageStorageId);
-      } catch {
-        // already gone
-      }
+      } catch {}
     }
 
     await ctx.db.delete(post._id);
@@ -193,10 +177,6 @@ export const deletePost = mutation({
   },
 });
 
-/**
- * Like / unlike a post for the current user and keep likeCount in sync.
- * Returns the resulting liked state.
- */
 export const toggleLike = mutation({
   args: { postId: v.id("posts") },
   returns: v.object({ liked: v.boolean() }),
@@ -235,7 +215,6 @@ export const toggleLike = mutation({
   },
 });
 
-/** Add a comment to a post and keep commentCount in sync. */
 export const addComment = mutation({
   args: { postId: v.id("posts"), content: v.string() },
   returns: v.id("comments"),
@@ -263,10 +242,6 @@ export const addComment = mutation({
   },
 });
 
-/**
- * Delete a comment. Allowed for the comment's author or the post's author
- * (moderating your own post). Keeps commentCount in sync.
- */
 export const deleteComment = mutation({
   args: { commentId: v.id("comments") },
   returns: v.null(),
@@ -300,7 +275,6 @@ const commentItemValidator = v.object({
   author: v.union(authorSummaryValidator, v.null()),
 });
 
-/** Comments for a post, oldest first, each with an author summary. */
 export const getComments = query({
   args: { postId: v.id("posts") },
   returns: v.array(commentItemValidator),
@@ -318,7 +292,7 @@ export const getComments = query({
         authorId: c.authorId,
         content: c.content,
         author: await authorSummary(ctx, c.authorId),
-      }))
+      })),
     );
   },
 });

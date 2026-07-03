@@ -2,16 +2,6 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import { careerPhaseValidator } from "./model";
 
-/**
- * Internal AI writers — the security boundary.
- *
- * These are internalMutations: never callable directly from a browser client.
- * They accept a real Id<"users"> (already resolved by the caller) and insert
- * with the appropriate persisted status + createdAt. The Eve bridge (eve.ts)
- * dispatches here via ctx.runMutation after checking its shared secret and
- * resolving the Clerk userId to a users._id.
- */
-
 const featureValidator = v.union(
   v.literal("profile_optimizer"),
   v.literal("job_matcher"),
@@ -19,7 +9,6 @@ const featureValidator = v.union(
   v.literal("career_plan"),
 );
 
-/** Persist an AI-generated profile draft with status "saved". */
 export const saveProfileDraft = internalMutation({
   args: {
     userId: v.id("users"),
@@ -46,7 +35,6 @@ export const saveProfileDraft = internalMutation({
   },
 });
 
-/** Persist an AI-generated outreach draft with status "saved". */
 export const saveOutreachDraft = internalMutation({
   args: {
     userId: v.id("users"),
@@ -73,7 +61,6 @@ export const saveOutreachDraft = internalMutation({
   },
 });
 
-/** Persist an AI-generated 30/60/90 career plan with status "saved". */
 export const saveCareerPlan = internalMutation({
   args: {
     userId: v.id("users"),
@@ -102,7 +89,6 @@ export const saveCareerPlan = internalMutation({
   },
 });
 
-/** Record that an AI feature ran (for history / telemetry). */
 export const recordAiRun = internalMutation({
   args: {
     userId: v.id("users"),

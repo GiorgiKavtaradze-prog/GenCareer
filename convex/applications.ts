@@ -23,7 +23,6 @@ import {
 import { orgHasCompanyProBilling } from "./clerkBilling";
 import { computeMatchScore } from "./jobs";
 
-/** Apply to a job. Re-applying after a withdrawal re-activates the row. */
 export const apply = mutation({
   args: {
     jobId: v.id("jobs"),
@@ -81,7 +80,6 @@ export const apply = mutation({
       });
     }
 
-    // Tell the company (its owner) about the new applicant.
     const company = await ctx.db.get(job.companyId);
     if (company?.ownerId !== undefined) {
       await notify(ctx, {
@@ -97,7 +95,6 @@ export const apply = mutation({
   },
 });
 
-/** Withdraw the caller's application to a job. */
 export const withdraw = mutation({
   args: { jobId: v.id("jobs") },
   returns: v.null(),
@@ -126,7 +123,6 @@ export const withdraw = mutation({
   },
 });
 
-/** The caller's applications, newest first, enriched with job + company. */
 export const getMyApplications = query({
   args: {},
   returns: v.array(
@@ -169,16 +165,6 @@ const applicantValidator = v.object({
   skills: v.array(skillDocValidator),
 });
 
-/**
- * Applicants for one job (or the whole company when jobId is omitted),
- * newest first, enriched with the applicant's public profile and skills.
- * Caller must administer the company. Pro-only presentation (skill
- * insights, etc.) is gated in the UI via Clerk's `has()`, not here.
- */
-/**
- * One application with its full context for the applicant detail page.
- * Caller must administer the company the application belongs to.
- */
 export const getApplicantDetail = query({
   args: { applicationId: v.id("applications") },
   returns: v.union(
@@ -291,17 +277,6 @@ export const getApplicantsForCompany = query({
   },
 });
 
-/**
- * Move an application through the pipeline. Caller must administer the
- * company; the applicant gets a status notification.
- *
- * Org billing: the free tier can mark applicants reviewed/rejected; the
- * interview and offer stages require Company Pro. This is an ACTION because
- * the plan is verified against Clerk Billing via the Backend SDK (an
- * outbound HTTP call) — never via JWT claims. The database work runs in
- * updateStatusInternal, which re-asserts company admin under the same
- * caller identity.
- */
 export const updateStatus = action({
   args: {
     applicationId: v.id("applications"),
@@ -326,11 +301,6 @@ export const updateStatus = action({
   },
 });
 
-/**
- * Transactional half of updateStatus. Auth is NOT delegated to the action:
- * this re-asserts company admin itself (ctx.auth carries the same caller
- * identity through ctx.runMutation).
- */
 export const updateStatusInternal = internalMutation({
   args: {
     applicationId: v.id("applications"),
