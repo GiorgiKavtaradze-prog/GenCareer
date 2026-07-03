@@ -3,11 +3,6 @@ import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LockedFeatureCard } from "./locked-feature-card";
 
-/**
- * A Pro AI trigger. When unlocked, deep-links into the AI Career Agent with a
- * prefilled prompt (the agent auto-runs it). When locked, renders the upsell.
- * Entitlement is decided server-side by the caller (`locked` prop).
- */
 export function AiActionButton({
   locked,
   label,

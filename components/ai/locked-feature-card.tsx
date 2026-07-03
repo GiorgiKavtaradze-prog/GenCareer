@@ -3,9 +3,6 @@ import { Lock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/**
- * Shown to Free users where a Pro AI feature would be. Server-safe (presentational).
- */
 export function LockedFeatureCard({
   title,
   description,

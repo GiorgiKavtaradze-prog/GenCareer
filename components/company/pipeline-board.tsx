@@ -27,7 +27,6 @@ const STAGES: PipelineStage[] = [
   "rejected",
 ];
 
-/** Pipeline stages that require the Company Pro (org) plan. */
 export const PRO_STAGES = new Set<PipelineStage>(["interviewing", "offer"]);
 
 export type PipelineApplicant = {
@@ -43,11 +42,6 @@ export type PipelineApplicant = {
   } | null;
 };
 
-/**
- * Kanban view of the hiring pipeline. Cards drag between stage columns
- * (native HTML5 drag & drop — no library). Interview/offer columns are
- * locked on the free org tier.
- */
 export function PipelineBoard({
   applicants,
   jobTitle,
@@ -59,7 +53,6 @@ export function PipelineBoard({
   applicants: PipelineApplicant[];
   jobTitle: Map<string, string>;
   isPro: boolean;
-  /** When false, the rejected column is hidden entirely. */
   showRejected?: boolean;
   onMove: (applicationId: Id<"applications">, status: PipelineStage) => void;
   onOpen?: (applicationId: Id<"applications">) => void;
@@ -81,11 +74,10 @@ export function PipelineBoard({
   return (
     <div className="-mx-1 overflow-x-auto px-1 pb-1">
       <div
-        className={`grid gap-2 ${
-          stages.length === 5
-            ? "min-w-[880px] grid-cols-5"
-            : "min-w-[704px] grid-cols-4"
-        }`}
+        className={`grid gap-2 ${stages.length === 5
+          ? "min-w-[880px] grid-cols-5"
+          : "min-w-[704px] grid-cols-4"
+          }`}
       >
         {stages.map((stage) => {
           const locked = !isPro && PRO_STAGES.has(stage);
@@ -94,9 +86,8 @@ export function PipelineBoard({
           return (
             <div
               key={stage}
-              className={`flex min-h-48 flex-col rounded-lg border bg-muted/30 transition-colors ${
-                isTarget ? "border-primary bg-primary/5" : ""
-              } ${locked ? "opacity-70" : ""}`}
+              className={`flex min-h-48 flex-col rounded-lg border bg-muted/30 transition-colors ${isTarget ? "border-primary bg-primary/5" : ""
+                } ${locked ? "opacity-70" : ""}`}
               onDragOver={(e) => {
                 if (locked) return;
                 e.preventDefault();
@@ -153,11 +144,10 @@ export function PipelineBoard({
                         setDropTarget(null);
                       }}
                       onClick={() => onOpen?.(app._id)}
-                      className={`cursor-grab rounded-md border p-2.5 shadow-xs transition-colors active:cursor-grabbing ${
-                        stage === "offer"
-                          ? "border-apricot/50 bg-apricot/10 hover:border-apricot"
-                          : "bg-card hover:border-primary/40"
-                      } ${dragging === app._id ? "opacity-50" : ""}`}
+                      className={`cursor-grab rounded-md border p-2.5 shadow-xs transition-colors active:cursor-grabbing ${stage === "offer"
+                        ? "border-apricot/50 bg-apricot/10 hover:border-apricot"
+                        : "bg-card hover:border-primary/40"
+                        } ${dragging === app._id ? "opacity-50" : ""}`}
                     >
                       <div className="flex items-center gap-2">
                         <UserAvatar

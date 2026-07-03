@@ -31,7 +31,6 @@ export type JobCardData = {
   company: { name: string; logoUrl?: string; slug: string } | null;
 };
 
-/** Match badge colored by score. */
 export function MatchBadge({ score }: { score: number }) {
   const tone =
     score >= 75
@@ -76,8 +75,6 @@ export function JobCard({
   }
 
   return (
-    // Not a <button>: it contains the Save button, and nested buttons are invalid
-    // HTML. Use a clickable/keyboard-accessible div instead.
     <div
       role="button"
       tabIndex={0}

@@ -9,14 +9,11 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const MAX_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPTED = ["image/png", "image/jpeg", "image/webp", "image/gif"];
-
-/** Upload a picked file to Convex storage and return its storageId. */
 export function useImageUpload() {
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const [uploading, setUploading] = useState(false);
-
   const upload = useCallback(
     async (file: File): Promise<Id<"_storage"> | null> => {
       if (!ACCEPTED.includes(file.type)) {
@@ -49,14 +46,9 @@ export function useImageUpload() {
     },
     [generateUploadUrl],
   );
-
   return { upload, uploading };
 }
 
-/**
- * A "change image" button + hidden file input. Uploads to Convex storage and
- * hands back the storageId; the parent decides which mutation to call.
- */
 export function ImagePickerButton({
   label,
   onUploaded,
@@ -68,7 +60,6 @@ export function ImagePickerButton({
 }: {
   label: string;
   onUploaded: (storageId: Id<"_storage">) => void | Promise<void>;
-  /** Show a companion "remove" button when an image is set. */
   onClear?: () => void | Promise<void>;
   hasImage?: boolean;
   className?: string;
@@ -78,7 +69,6 @@ export function ImagePickerButton({
   const inputRef = useRef<HTMLInputElement>(null);
   const { upload, uploading } = useImageUpload();
   const [busy, setBusy] = useState(false);
-
   async function onFile(file: File | undefined) {
     if (!file) return;
     const storageId = await upload(file);
@@ -90,9 +80,7 @@ export function ImagePickerButton({
       setBusy(false);
     }
   }
-
   const working = uploading || busy;
-
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
       <input

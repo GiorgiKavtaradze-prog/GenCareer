@@ -14,12 +14,6 @@ import { useCompanyPro } from "@/lib/use-billing";
 
 const COMPANY_PLAN_ID = process.env.NEXT_PUBLIC_CLERK_COMPANY_PLAN_ID ?? "";
 
-/**
- * Org-billing status card for the company dashboard: shows the active plan,
- * free-tier job-slot usage, and the upgrade / manage-subscription actions.
- * Billing is org-scoped — the subscription and checkout both resolve against
- * the ACTIVE organization.
- */
 export function CompanyBillingCard({ openJobs }: { openJobs: number }) {
   const { orgId } = useAuth();
   const { organization } = useOrganization();

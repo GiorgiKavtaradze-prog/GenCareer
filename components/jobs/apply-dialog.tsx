@@ -18,10 +18,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-/**
- * Apply / withdraw control for a job. Shows an optimistic "Applied" state;
- * Convex reactivity keeps it correct across pages.
- */
 export function ApplyButton({
   jobId,
   jobTitle,

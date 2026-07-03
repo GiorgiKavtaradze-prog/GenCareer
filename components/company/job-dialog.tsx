@@ -44,7 +44,6 @@ export type EditableJob = {
   description: string;
 };
 
-/** Create or edit a job posting for the company dashboard. */
 export function JobDialog({
   companyId,
   job,
@@ -54,7 +53,6 @@ export function JobDialog({
 }) {
   const isEdit = !!job;
   const [open, setOpen] = useState(false);
-  // createJob is an action — it checks org billing via the Clerk Billing SDK.
   const createJob = useAction(api.jobs.createJob);
   const updateJob = useMutation(api.jobs.updateJob);
 

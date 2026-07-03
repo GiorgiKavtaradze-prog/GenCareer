@@ -36,8 +36,6 @@ const KIND_LABEL: Record<string, string> = {
   update: "Update",
 };
 
-/* Post-kind chips carry the landing palette: blue for hiring,
-   apricot for hot takes, green for launches. */
 const KIND_TONE: Record<string, string> = {
   hiring: "bg-primary/10 text-primary",
   hot_take: "bg-apricot/30 text-ink dark:bg-apricot/20 dark:text-apricot",
@@ -87,7 +85,6 @@ export function PostCard({
   const [savingEdit, setSavingEdit] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Lazily fetch comments only when the section is open.
   const comments = useQuery(
     api.feed.getComments,
     showComments ? { postId: post._id } : "skip"
@@ -111,7 +108,6 @@ export function PostCard({
     if (!text) return;
     setComment("");
     setCommentCount((c) => c + 1);
-    // keep the section open so the new comment appears (Convex is reactive)
     await addComment({ postId: post._id, content: text });
   }
 
@@ -201,7 +197,6 @@ export function PostCard({
         )}
       </div>
 
-      {/* Controlled: the trigger lives in the dropdown, which unmounts on close. */}
       <ConfirmDialog
         title="Delete this post?"
         description="The post, its comments, and likes will be permanently removed."
@@ -247,7 +242,6 @@ export function PostCard({
 
       {post.imageUrl && !editing && (
         <div className="mt-3 overflow-hidden rounded-lg border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.imageUrl}
             alt=""
@@ -280,7 +274,6 @@ export function PostCard({
 
       {showComments && (
         <div className="mt-3 space-y-3 border-t pt-3">
-          {/* Add a comment */}
           <div className="flex items-center gap-2">
             <Input
               autoFocus
@@ -296,8 +289,7 @@ export function PostCard({
               <Send className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Existing comments */}
+          
           {comments === undefined ? (
             <p className="text-xs text-muted-foreground">Loading comments…</p>
           ) : comments.length === 0 ? (

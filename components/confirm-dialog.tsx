@@ -12,13 +12,6 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-/**
- * Destructive-action confirmation.
- *
- * Uncontrolled: pass `renderTrigger` and the dialog manages its own state.
- * Controlled: pass `open` + `onOpenChange` (needed when the trigger lives in
- * a menu that unmounts on close).
- */
 export function ConfirmDialog({
   title,
   description,

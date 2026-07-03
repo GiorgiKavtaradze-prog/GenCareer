@@ -85,8 +85,6 @@ export function TopNav() {
   const me = useQuery(api.users.getCurrentUser, {});
   const myUsername = me?.user.username;
 
-  // Typeahead across companies, people, and jobs. Deferred so fast typing
-  // doesn't fire a query per keystroke.
   const deferredQuery = useDeferredValue(query.trim());
   const results = useQuery(
     api.search.global,
@@ -105,25 +103,22 @@ export function TopNav() {
     return pathname === href || pathname.startsWith(href + "/");
   }
 
-  // Company accounts get their dashboard; everyone else goes straight into
-  // the B2B flow (/onboarding/company creates the Clerk org + linked company,
-  // and redirects to /company when one already exists).
   const navItems =
     myCompany === undefined
       ? NAV_ITEMS
       : myCompany
         ? [
-            ...NAV_ITEMS,
-            { href: "/company", label: "Dashboard", icon: LayoutDashboard },
-          ]
+          ...NAV_ITEMS,
+          { href: "/company", label: "Dashboard", icon: LayoutDashboard },
+        ]
         : [
-            ...NAV_ITEMS,
-            {
-              href: "/onboarding/company",
-              label: "For companies",
-              icon: LayoutDashboard,
-            },
-          ];
+          ...NAV_ITEMS,
+          {
+            href: "/onboarding/company",
+            label: "For companies",
+            icon: LayoutDashboard,
+          },
+        ];
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -143,7 +138,6 @@ export function TopNav() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setSearchFocused(true)}
-            // Delay so clicks on dropdown links land before it unmounts.
             onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
             placeholder="Search jobs, people, companies"
             className="h-9 rounded-full bg-muted/60 pl-9"
@@ -235,8 +229,6 @@ export function TopNav() {
 
           <NotificationsBell />
 
-          {/* Org switcher: create/switch orgs, invite teammates. Only shown
-              for company accounts so job seekers keep a clean nav. */}
           {myCompany?.orgId && (
             <div className="hidden sm:block">
               <OrganizationSwitcher

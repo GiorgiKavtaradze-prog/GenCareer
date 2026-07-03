@@ -1,7 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-/** Compact, styled markdown for agent responses (no typography plugin needed). */
 export function Markdown({ children }: { children: string }) {
   return (
     <div className="space-y-2 text-sm leading-relaxed">

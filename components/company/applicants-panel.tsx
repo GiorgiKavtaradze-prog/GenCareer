@@ -35,7 +35,6 @@ const PIPELINE = [
   "rejected",
 ] as const;
 
-/** Pipeline stages that require the Company Pro (org) plan. */
 const PRO_STAGES = new Set<string>(["interviewing", "offer"]);
 
 export const APPLICATION_STATUS_LABEL: Record<string, string> = {
@@ -63,7 +62,6 @@ export function applicationStatusTone(status: string): string {
   }
 }
 
-/** Applicant review panel for the company dashboard. */
 export function ApplicantsPanel({
   companyId,
   jobs,
@@ -71,12 +69,9 @@ export function ApplicantsPanel({
 }: {
   companyId: Id<"companies">;
   jobs: { _id: Id<"jobs">; title: string }[];
-  // When set, the panel only shows this job's applicants and the job filter
-  // is hidden (used by the per-job full page).
   lockedJobId?: Id<"jobs">;
 }) {
   const router = useRouter();
-  // Billing-API-backed check — the pipeline is a Company Pro (org) feature.
   const { isPro } = useCompanyPro();
   const [jobFilter, setJobFilter] = useState<string>(
     lockedJobId ? (lockedJobId as string) : "all",
@@ -92,7 +87,6 @@ export function ApplicantsPanel({
 
   const jobTitle = new Map(jobs.map((j) => [j._id as string, j.title]));
 
-  // Rejected/withdrawn are hidden by default to keep the pipeline focused.
   const closedCount = (applicants ?? []).filter(
     (a) => a.status === "rejected" || a.status === "withdrawn",
   ).length;
