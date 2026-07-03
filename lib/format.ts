@@ -1,5 +1,3 @@
-/** Shared display formatters. */
-
 export function initials(name: string): string {
   return name
     .split(" ")
