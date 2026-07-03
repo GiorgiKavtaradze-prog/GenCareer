@@ -1,4 +1,4 @@
-# CareerConnect — AI-Powered Professional Network (LinkedIn-style) with an AI Career Agent
+# CareerConnect AI Career Agent
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![Convex](https://img.shields.io/badge/Convex-Backend-ff6b35?logo=convex)](https://convex.dev/referral/SONNYS4371)
@@ -89,17 +89,7 @@ Want to build apps like this from scratch? Learn how to **code with AI the right
 - 🤖 **AI Agents** — Vercel Eve: server-scoped tools, approval gates, grounding in real data, and agent↔backend bridges
 - 🎨 **Modern UI** — shadcn/ui, Tailwind CSS v4, and a distinctive "paper & ink" editorial design language
 
-### The PAPAFAM Community
-
-- 💬 Join thousands of developers building together
-- 🏆 Real results from graduates who landed jobs and launched products
-- 📦 Full course materials, starter code, and lifetime access
-
-👉 **[Join the PAPAFAM and start building →](https://www.papareact.com/course)**
-
 ---
-
-## ✨ Features
 
 ### The Professional Network
 
