@@ -21,14 +21,6 @@ import {
 
 const COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
 
-/**
- * Company onboarding, org-first:
- * 1. No active Clerk Organization → Clerk's <OrganizationList/> handles
- *    creating one or joining via invitation/suggestion.
- * 2. Active org but no linked company page → publish the Convex company
- *    page tied to that org (teammates co-manage it via org membership).
- * 3. Company already linked → straight to the dashboard.
- */
 export default function CompanyOnboardingPage() {
   const router = useRouter();
   const { organization: activeOrg, isLoaded: orgLoaded } = useOrganization();
@@ -43,7 +35,6 @@ export default function CompanyOnboardingPage() {
   const [about, setAbout] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Already set up? Straight to the dashboard.
   const hasCompany = myCompany !== undefined && myCompany !== null;
   useEffect(() => {
     if (hasCompany) router.replace("/company");
@@ -58,8 +49,6 @@ export default function CompanyOnboardingPage() {
     );
   }
 
-  // Step 1 — no organization yet: Clerk's native create/join UI (handles
-  // new orgs, invitations, and suggestions). Both paths land back here.
   if (!activeOrg) {
     return (
       <div className="mx-auto max-w-xl">
@@ -89,7 +78,6 @@ export default function CompanyOnboardingPage() {
     );
   }
 
-  // Narrowed copy so the submit closure keeps the non-null type.
   const org = activeOrg;
   const companyName = name.trim() || org.name;
 
@@ -105,7 +93,6 @@ export default function CompanyOnboardingPage() {
     }
     setSubmitting(true);
     try {
-      // Step 2 — publish the company page linked to the active org.
       await createCompany({
         name: companyName,
         industry: industry.trim(),

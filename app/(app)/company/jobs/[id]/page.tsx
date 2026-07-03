@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatSalary, seniorityLabel, workModeLabel, timeAgo } from "@/lib/format";
 
-/** All applicants for one job, company-admin only. */
 export default function CompanyJobPage() {
   const { id } = useParams<{ id: string }>();
   const jobId = id as Id<"jobs">;
@@ -47,7 +46,6 @@ export default function CompanyJobPage() {
         Back to dashboard
       </Button>
 
-      {/* Job header */}
       <div className="rounded-xl border bg-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -82,7 +80,6 @@ export default function CompanyJobPage() {
         </div>
       </div>
 
-      {/* Applicants for this job only */}
       <ApplicantsPanel
         companyId={company._id}
         jobs={[{ _id: job._id, title: job.title }]}

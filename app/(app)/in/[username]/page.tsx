@@ -79,8 +79,6 @@ export default function ProfilePage() {
   const setAvatar = useMutation(api.files.setMyAvatar);
   const setCover = useMutation(api.files.setMyProfileCover);
 
-  // Billing-API-backed check — personal Pro unlocks this even while an org
-  // is active (the session token only carries the active payer's plans).
   const { isPro: personalPro } = usePersonalPro();
   const optimizerLocked = !personalPro;
 
@@ -267,7 +265,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Demo helper */}
       {isOwn && (
         <div className="flex items-center justify-between rounded-xl border border-dashed bg-muted/30 p-3 text-sm">
           <span className="text-muted-foreground">
@@ -288,7 +285,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Improve with AI */}
       {isOwn && (
         <AiActionButton
           locked={optimizerLocked}
@@ -299,7 +295,6 @@ export default function ProfilePage() {
         />
       )}
 
-      {/* Saved AI drafts */}
       {isOwn && savedDrafts.length > 0 && (
         <Card title="AI profile drafts" icon={Wand2}>
           <div className="space-y-3">
@@ -345,14 +340,12 @@ export default function ProfilePage() {
         </Card>
       )}
 
-      {/* About */}
       <Card title="About" icon={UserRound}>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
           {profile?.about || "Nothing here yet."}
         </p>
       </Card>
 
-      {/* Experience */}
       <Card
         title="Experience"
         icon={Briefcase}
@@ -394,7 +387,6 @@ export default function ProfilePage() {
         )}
       </Card>
 
-      {/* Education */}
       <Card
         title="Education"
         icon={GraduationCap}
@@ -428,7 +420,6 @@ export default function ProfilePage() {
         )}
       </Card>
 
-      {/* Skills */}
       <Card title="Skills" icon={ThumbsUp}>
         {isOwn ? (
           <SkillsEditor skills={skills} />
@@ -482,7 +473,6 @@ export default function ProfilePage() {
         )}
       </Card>
 
-      {/* Activity */}
       <Card title="Activity" icon={Newspaper}>
         {recentPosts.length === 0 ? (
           <p className="text-sm text-muted-foreground">No recent posts.</p>
@@ -492,7 +482,6 @@ export default function ProfilePage() {
               <div key={p._id} className="rounded-lg border p-3 text-sm">
                 <p className="whitespace-pre-wrap">{p.content}</p>
                 {p.imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={p.imageUrl}
                     alt=""

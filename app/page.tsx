@@ -141,9 +141,8 @@ function Eyebrow({
 }) {
   return (
     <p
-      className={`flex items-center gap-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.24em] ${
-        dark ? "text-paper/50" : "text-ink/55"
-      }`}
+      className={`flex items-center gap-2.5 font-mono text-[11px] font-medium uppercase tracking-[0.24em] ${dark ? "text-paper/50" : "text-ink/55"
+        }`}
     >
       <span aria-hidden className="text-apricot">
         ✦
@@ -159,7 +158,6 @@ export default async function LandingPage() {
 
   return (
     <div className="lp lp-grain relative min-h-svh overflow-x-clip bg-paper text-ink">
-      {/* ===== Nav ===== */}
       <header className="sticky top-0 z-40 border-b border-ink/8 bg-paper/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo />
@@ -200,9 +198,7 @@ export default async function LandingPage() {
           </div>
         </div>
       </header>
-
       <main>
-        {/* ===== Hero ===== */}
         <section className="relative">
           <div
             aria-hidden
@@ -216,7 +212,6 @@ export default async function LandingPage() {
             aria-hidden
             className="pointer-events-none absolute -left-24 bottom-0 size-72 rounded-full bg-apricot/20 blur-3xl"
           />
-
           <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-24">
             <div className="lp-stagger">
               <div className="flex flex-wrap items-center gap-3">
@@ -226,19 +221,16 @@ export default async function LandingPage() {
                   Powered by Vercel Eve
                 </span>
               </div>
-
               <h1 className="mt-6 font-display text-[2.9rem]/[1.04] font-medium tracking-[-0.02em] sm:text-6xl/[1.03] lg:text-[4.4rem]/[1.02]">
                 Your career just hired an{" "}
                 <span className="lp-hl px-1 italic">agent</span>.
               </h1>
-
               <p className="mt-6 max-w-lg text-lg/relaxed text-ink-soft">
                 CareerConnect pairs a real professional network with Eve — an AI
                 career agent that polishes your profile, ranks live openings by
                 fit, drafts your outreach, and maps your next 90 days. You
                 approve every move.
               </p>
-
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button
                   render={<Link href="/sign-up" />}
@@ -255,7 +247,6 @@ export default async function LandingPage() {
                   See Eve at work
                 </Button>
               </div>
-
               <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-ink/60">
                 {[
                   "Free for job seekers",
@@ -269,8 +260,6 @@ export default async function LandingPage() {
                 ))}
               </ul>
             </div>
-
-            {/* Product collage */}
             <div className="relative mx-auto w-full max-w-md lg:max-w-none">
               <div className="relative z-10 rounded-3xl border border-ink/10 bg-white/90 p-5 shadow-[0_28px_80px_-32px_rgb(15_23_42/0.45)] backdrop-blur">
                 <div className="flex items-center gap-2.5">
@@ -287,7 +276,6 @@ export default async function LandingPage() {
                     <p className="text-[11px] text-ink/50">Your career agent</p>
                   </div>
                 </div>
-
                 <div className="mt-4 space-y-3">
                   <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-ink px-3.5 py-2 text-sm text-paper">
                     I want a senior product role at an AI startup.
@@ -330,8 +318,6 @@ export default async function LandingPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Floating: application stage */}
               <div className="lp-float absolute -top-10 right-0 z-20 hidden w-60 rotate-2 rounded-2xl border border-ink/10 bg-white p-3.5 shadow-xl sm:block lg:-right-6">
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45">
                   Application
@@ -349,8 +335,6 @@ export default async function LandingPage() {
                   Interviewing · round 2 booked
                 </p>
               </div>
-
-              {/* Floating: outreach draft */}
               <div className="lp-float absolute -bottom-12 -left-3 z-20 hidden w-64 -rotate-2 rounded-2xl border border-ink/10 bg-white p-3.5 shadow-xl [animation-delay:1.6s] sm:block lg:-left-10">
                 <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink/45">
                   <PenLine className="size-3" />
@@ -364,8 +348,6 @@ export default async function LandingPage() {
                   Approve & send
                 </span>
               </div>
-
-              {/* Floating: profile toast */}
               <div className="lp-float absolute -left-5 top-[4.6rem] z-20 hidden -rotate-3 items-center gap-2 rounded-full border border-ink/10 bg-white py-2 pl-2.5 pr-4 shadow-lg [animation-delay:0.8s] lg:flex xl:-left-10">
                 <BadgeCheck className="size-4 text-primary" />
                 <span className="text-xs font-medium text-ink/75">
@@ -375,8 +357,6 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* ===== Marquee ===== */}
         <div
           aria-hidden
           className="lp-marquee relative overflow-hidden border-y border-ink/8 bg-paper-deep py-3.5"
@@ -390,8 +370,6 @@ export default async function LandingPage() {
             ))}
           </div>
         </div>
-
-        {/* ===== How it works ===== */}
         <section id="how" className="scroll-mt-20">
           <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
             <Reveal>
@@ -408,7 +386,6 @@ export default async function LandingPage() {
                 </p>
               </div>
             </Reveal>
-
             <div className="mt-12 grid gap-10 border-t border-dashed border-ink/20 pt-10 sm:grid-cols-3">
               {STEPS.map((step, i) => (
                 <Reveal key={step.n} delay={i * 120}>
@@ -424,8 +401,6 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* ===== Meet Eve ===== */}
         <section id="agent" className="scroll-mt-20">
           <div className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
             <div className="relative overflow-hidden rounded-[2rem] border border-ink/10 bg-white p-6 sm:p-10 lg:p-14">
@@ -447,7 +422,6 @@ export default async function LandingPage() {
                   </p>
                 </div>
               </Reveal>
-
               <div className="relative mt-10 grid gap-4 sm:grid-cols-2">
                 {EVE_TOOLS.map((tool, i) => (
                   <Reveal key={tool.title} delay={(i % 2) * 120}>
@@ -468,7 +442,6 @@ export default async function LandingPage() {
                   </Reveal>
                 ))}
               </div>
-
               <Reveal>
                 <div className="relative mt-6 flex flex-col items-start gap-4 rounded-2xl bg-ink p-5 text-paper sm:flex-row sm:items-center sm:p-6">
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-apricot/20 text-apricot">
@@ -494,8 +467,6 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* ===== The network ===== */}
         <section className="border-t border-ink/8">
           <div className="mx-auto grid max-w-6xl gap-12 px-4 py-24 sm:px-6 lg:grid-cols-[0.85fr_1.15fr]">
             <Reveal>
@@ -510,7 +481,6 @@ export default async function LandingPage() {
                 network lives.
               </p>
             </Reveal>
-
             <div>
               {NETWORK_FEATURES.map((f, i) => (
                 <Reveal key={f.title} delay={i * 80}>
@@ -528,8 +498,6 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* ===== Quote ===== */}
         <section className="border-y border-ink/8 bg-paper-deep">
           <div className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6">
             <Reveal>
@@ -549,8 +517,6 @@ export default async function LandingPage() {
             </Reveal>
           </div>
         </section>
-
-        {/* ===== For companies ===== */}
         <section id="companies" className="scroll-mt-20 bg-ink text-paper">
           <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 py-24 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:py-28">
             <Reveal>
@@ -593,8 +559,6 @@ export default async function LandingPage() {
                 </Button>
               </div>
             </Reveal>
-
-            {/* Pipeline mock */}
             <Reveal delay={150}>
               <div className="rounded-3xl border border-paper/12 bg-white/[0.04] p-5 backdrop-blur">
                 <div className="flex items-center justify-between gap-3">
@@ -613,7 +577,6 @@ export default async function LandingPage() {
                     3 open roles
                   </span>
                 </div>
-
                 <div className="mt-5 grid grid-cols-3 gap-3">
                   {PIPELINE.map((col) => (
                     <div key={col.label}>
@@ -625,11 +588,10 @@ export default async function LandingPage() {
                         {col.people.map((p) => (
                           <div
                             key={p.name}
-                            className={`flex items-center gap-2 rounded-lg border p-2 ${
-                              col.label === "Offer"
-                                ? "border-apricot/50 bg-apricot/10"
-                                : "border-paper/10 bg-white/[0.05]"
-                            }`}
+                            className={`flex items-center gap-2 rounded-lg border p-2 ${col.label === "Offer"
+                              ? "border-apricot/50 bg-apricot/10"
+                              : "border-paper/10 bg-white/[0.05]"
+                              }`}
                           >
                             <span
                               className={`size-5 shrink-0 rounded-full ${p.dot}`}
@@ -648,7 +610,6 @@ export default async function LandingPage() {
                     </div>
                   ))}
                 </div>
-
                 <div className="mt-5 flex items-center justify-between border-t border-paper/10 pt-4 text-[11px] text-paper/55">
                   <span className="flex items-center gap-1.5">
                     <Users className="size-3.5" />4 teammates reviewing
@@ -662,8 +623,6 @@ export default async function LandingPage() {
             </Reveal>
           </div>
         </section>
-
-        {/* ===== Pricing ===== */}
         <section id="pricing" className="scroll-mt-20">
           <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6">
             <Reveal>
@@ -677,9 +636,7 @@ export default async function LandingPage() {
                 </h2>
               </div>
             </Reveal>
-
             <div className="mt-14 grid gap-5 lg:grid-cols-3">
-              {/* Free */}
               <Reveal>
                 <div className="flex h-full flex-col rounded-3xl border border-ink/10 bg-white p-7">
                   <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/50">
@@ -716,8 +673,6 @@ export default async function LandingPage() {
                   </Button>
                 </div>
               </Reveal>
-
-              {/* Pro */}
               <Reveal delay={120}>
                 <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-ink p-7 text-paper shadow-[0_28px_70px_-30px_rgb(15_23_42/0.6)]">
                   <div
@@ -760,8 +715,6 @@ export default async function LandingPage() {
                   </Button>
                 </div>
               </Reveal>
-
-              {/* Company Pro */}
               <Reveal delay={240}>
                 <div className="flex h-full flex-col rounded-3xl border border-ink/10 bg-white p-7">
                   <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/50">
@@ -799,15 +752,12 @@ export default async function LandingPage() {
                 </div>
               </Reveal>
             </div>
-
             <p className="mt-8 text-center text-xs text-ink/45">
               Full plan details and checkout live in the app once you&apos;re
               signed in.
             </p>
           </div>
         </section>
-
-        {/* ===== Final CTA ===== */}
         <section className="relative border-t border-ink/8">
           <div
             aria-hidden
@@ -845,8 +795,6 @@ export default async function LandingPage() {
           </div>
         </section>
       </main>
-
-      {/* ===== Footer ===== */}
       <footer className="bg-ink text-paper">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>

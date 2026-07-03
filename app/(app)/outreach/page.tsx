@@ -16,8 +16,6 @@ import { timeAgo } from "@/lib/format";
 export default function OutreachPage() {
   const drafts = useQuery(api.drafts.getMyOutreachDrafts, {});
   const deleteDraft = useMutation(api.drafts.deleteOutreachDraft);
-  // Billing-API-backed check — personal Pro unlocks this even while an org
-  // is active (the session token only carries the active payer's plans).
   const { isPro: personalPro } = usePersonalPro();
   const outreachLocked = !personalPro;
 

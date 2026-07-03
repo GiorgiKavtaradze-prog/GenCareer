@@ -46,10 +46,8 @@ const PIPELINE: PipelineStage[] = [
   "rejected",
 ];
 
-/** Full application detail for one applicant, company-admin only. */
 export default function ApplicantDetailPage() {
   const { id } = useParams<{ id: string }>();
-  // Billing-API-backed check — the pipeline is a Company Pro (org) feature.
   const { isPro } = useCompanyPro();
   const app = useQuery(api.applications.getApplicantDetail, {
     applicationId: id as Id<"applications">,
@@ -69,7 +67,6 @@ export default function ApplicantDetailPage() {
     );
   }
 
-  // Rows that predate statusHistory synthesize the submission event.
   const events =
     app.statusHistory && app.statusHistory.length > 0
       ? app.statusHistory
@@ -87,7 +84,6 @@ export default function ApplicantDetailPage() {
         Back to dashboard
       </Button>
 
-      {/* Candidate header */}
       <div className="rounded-xl border bg-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -223,7 +219,6 @@ export default function ApplicantDetailPage() {
           )}
         </section>
 
-        {/* Application flow */}
         <section className="rounded-xl border bg-card p-5">
           <h2 className="mb-3 font-heading text-lg font-semibold tracking-tight">
             Application flow

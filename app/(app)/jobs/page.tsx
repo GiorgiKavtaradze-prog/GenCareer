@@ -40,8 +40,6 @@ import {
 
 function JobsInner() {
   const params = useSearchParams();
-  // Billing-API-backed check — personal Pro unlocks this even while an org
-  // is active (the session token only carries the active payer's plans).
   const { isPro: personalPro } = usePersonalPro();
   const jobMatcherLocked = !personalPro;
 
@@ -53,28 +51,25 @@ function JobsInner() {
     (params.get("job") as Id<"jobs"> | null) ?? null
   );
 
-  // Compute the user's profile embedding once so jobs get a % match score
-  // (getJobs derives matchScore from the stored embeddings, reactively).
   const ensureMyProfileEmbedding = useAction(api.embeddings.ensureMyProfileEmbedding);
   useEffect(() => {
-    void ensureMyProfileEmbedding().catch(() => {});
+    void ensureMyProfileEmbedding().catch(() => { });
   }, [ensureMyProfileEmbedding]);
 
   const browseJobs = useQuery(
     api.jobs.getJobs,
     tab === "browse"
       ? {
-          search: search || undefined,
-          seniority: seniority === "all" ? undefined : (seniority as never),
-          workMode: workMode === "all" ? undefined : (workMode as never),
-        }
+        search: search || undefined,
+        seniority: seniority === "all" ? undefined : (seniority as never),
+        workMode: workMode === "all" ? undefined : (workMode as never),
+      }
       : "skip"
   );
   const savedJobs = useQuery(
     api.jobs.getSavedJobs,
     tab === "saved" ? {} : "skip"
   );
-  // Companies matching the search term, shown above the job results.
   const searchMatches = useQuery(
     api.search.global,
     tab === "browse" && search.trim().length >= 2
@@ -93,7 +88,6 @@ function JobsInner() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      {/* List column */}
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <Tabs value={tab} onValueChange={(v) => setTab(String(v ?? "browse"))}>
@@ -221,8 +215,6 @@ function JobsInner() {
           </div>
         )}
       </div>
-
-      {/* Detail column */}
       <div className="hidden lg:block">
         <div className="sticky top-[4.5rem]">
           {detail === undefined && activeId ? (

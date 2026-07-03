@@ -3,11 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { localRedirectPath } from "@/lib/safe-redirect";
 
-/**
- * Custom sign-in page. Already-signed-in visitors are bounced straight to
- * `redirect_url` (or the feed) — the <SignIn/> widget only handles the
- * signed-out case, where Clerk honors `redirect_url` itself on completion.
- */
 export default async function SignInPage({
   searchParams,
 }: {
