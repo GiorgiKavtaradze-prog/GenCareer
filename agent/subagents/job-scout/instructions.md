@@ -17,12 +17,15 @@ signed-in user. You do not chat with the user and you do not save anything.
 
 ## What to return
 
-Return a tight, structured shortlist the parent can render as cards:
+Fill the structured output faithfully from the tool results — the parent's UI renders
+`jobs` as rich job cards:
 
-- Per job: title, company, match score, top matched skills, key missing skills, and a
-  one-line "why this fits / what's the gap".
-- Order by match score, strongest first. Cap at what the parent asked for (default ~5).
-- End with a 1–2 sentence overall read: strongest realistic targets and the single
+- `jobs`: the ranked shortlist, strongest first, capped at what the parent asked for
+  (default ~5). Copy each job's `jobId`, `title`, `company`, location / workMode /
+  seniority, salary, `matchScore`, `matchedSkills`, and `missingSkills` straight from
+  `get_relevant_jobs` / `analyze_skill_gap` — `jobId` is what links the card. Add a
+  one-line `why` per job: why this fits / what's the gap.
+- `summary`: a 1–2 sentence overall read — strongest realistic targets and the single
   highest-leverage skill to close across the shortlist.
 
 ## Boundaries

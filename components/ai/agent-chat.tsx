@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEveAgent } from "eve/react";
-import { Sparkles, Send, Check, X, CircleHelp, Loader2 } from "lucide-react";
+import { Bot, Sparkles, Send, Check, X, CircleHelp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -121,8 +121,9 @@ export function AgentChat() {
               Your AI Career Agent
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Ask about your profile, jobs, outreach, or a career plan. I read
-              your real CareerConnect data and ask before saving anything.
+              Ask about your profile, jobs, outreach, or a career plan. One quick
+              question to scope it, then a specialist sub-agent does the heavy
+              lifting live on screen — and nothing saves without your approval.
             </p>
             <div className="mt-5 grid gap-2 text-left">
               {SUGGESTED.map((s) => (
@@ -255,9 +256,24 @@ const TOOL_LABELS: Record<string, string> = {
   create_profile_rewrite: "Drafted a profile rewrite",
   create_outreach_draft: "Drafted outreach",
   create_career_plan: "Drafted a career plan",
-  // Declared subagents surface as tool calls by their bare directory name.
-  "job-scout": "Scouting best-fit jobs",
-  "profile-writer": "Writing your profile rewrite",
+};
+
+// Declared subagents surface as tool calls by their bare directory name. These
+// get the full SubagentCard delegation treatment instead of a plain activity chip.
+const SUBAGENTS: Record<string, { name: string; tagline: string }> = {
+  "job-scout": { name: "Job Scout", tagline: "Ranking your best-fit jobs" },
+  "profile-writer": {
+    name: "Profile Writer",
+    tagline: "Drafting your profile rewrite",
+  },
+  "outreach-writer": {
+    name: "Outreach Writer",
+    tagline: "Writing your recruiter outreach",
+  },
+  "career-planner": {
+    name: "Career Planner",
+    tagline: "Building your 30/60/90 plan",
+  },
 };
 
 function ThinkingDots() {
@@ -317,6 +333,12 @@ function PartView({
         />
       );
     }
+    // Subagent delegation — a distinct named card, not a mere activity chip.
+    const subagent = part.toolName ? SUBAGENTS[part.toolName] : undefined;
+    if (subagent) {
+      return <SubagentCard part={part} subagent={subagent} busy={busy} />;
+    }
+
     // Rich job cards once ranked matches arrive from get_relevant_jobs.
     if (part.toolName === "get_relevant_jobs") {
       const jobs = extractJobs(part.output ?? part.result);
@@ -345,6 +367,74 @@ function PartView({
   }
 
   return null;
+}
+
+/**
+ * Delegation indicator: a distinct card shown whenever the root agent hands a
+ * task to a specialist subagent — names the specialist, shows the brief it was
+ * given, and tracks live status. Job Scout's structured shortlist additionally
+ * renders as rich job cards underneath once it returns.
+ */
+function SubagentCard({
+  part,
+  subagent,
+  busy,
+}: {
+  part: AnyPart;
+  subagent: { name: string; tagline: string };
+  busy: boolean;
+}) {
+  const done = part.state === "output-available" || !busy;
+  const input = part.input as { message?: unknown } | undefined;
+  const brief = typeof input?.message === "string" ? input.message : null;
+  const jobs = extractJobs(part.output ?? part.result);
+
+  return (
+    <div className="space-y-2">
+      <div className="overflow-hidden rounded-2xl border border-ink/15 bg-card shadow-sm">
+        <div className="flex items-center gap-3 p-3">
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink text-apricot",
+              !done && "animate-pulse",
+            )}
+          >
+            <Bot className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Sub-agent · {subagent.tagline}
+            </p>
+            <p className="truncate font-heading text-sm font-semibold tracking-tight">
+              {subagent.name}
+            </p>
+          </div>
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]",
+              done
+                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                : "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+            )}
+          >
+            {done ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            )}
+            {done ? "Done" : "Working"}
+          </span>
+        </div>
+        {brief && (
+          <p className="line-clamp-2 border-t bg-muted/30 px-3.5 py-2 text-xs text-muted-foreground">
+            <span className="font-medium">Brief: </span>
+            {brief}
+          </p>
+        )}
+      </div>
+      {jobs.length > 0 && <JobCards jobs={jobs} />}
+    </div>
+  );
 }
 
 function QuestionCard({
