@@ -8,7 +8,6 @@ export default function AuthLayout({
 }) {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      {/* Brand / value-prop panel */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-ink p-10 text-paper lg:flex">
         <div
           aria-hidden
@@ -41,8 +40,6 @@ export default function AuthLayout({
           © {new Date().getFullYear()} CareerConnect
         </p>
       </div>
-
-      {/* Auth form */}
       <div className="flex flex-col items-center justify-center gap-6 p-6 md:p-10">
         <Logo className="lg:hidden" />
         {children}

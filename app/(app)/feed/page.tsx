@@ -31,7 +31,6 @@ export default function FeedPage() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)_260px]">
-      {/* Left: profile card */}
       <aside className="hidden lg:block">
         <div className="sticky top-[4.5rem] space-y-4">
           <div className="overflow-hidden rounded-xl border bg-card">
@@ -74,7 +73,6 @@ export default function FeedPage() {
         </div>
       </aside>
 
-      {/* Center: composer + feed */}
       <div className="space-y-4">
         <PostComposer currentUser={me ? me.user : null} />
 
@@ -112,7 +110,6 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* Right: people + suggested jobs */}
       <aside className="hidden lg:block">
         <div className="sticky top-[4.5rem] space-y-4">
         {people !== undefined && people.length > 0 && (

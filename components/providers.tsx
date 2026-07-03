@@ -7,10 +7,6 @@ import { useAuth } from "@clerk/nextjs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 
-/**
- * App-wide client providers. Must be rendered inside <ClerkProvider> (root layout),
- * so `useAuth` resolves. ConvexProviderWithClerk bridges Clerk identity → Convex.
- */
 export function Providers({ children }: { children: ReactNode }) {
   const [convex] = useState(
     () => new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)

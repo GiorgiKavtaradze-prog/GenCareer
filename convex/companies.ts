@@ -18,7 +18,6 @@ import { computeMatchScore } from "./jobs";
 
 const jobIsOpen = (j: { status?: "open" | "closed" }) => j.status !== "closed";
 
-/** All companies with a live count of open roles per company. */
 export const getCompanies = query({
   args: { search: v.optional(v.string()) },
   returns: v.array(
@@ -50,11 +49,6 @@ export const getCompanies = query({
   },
 });
 
-/**
- * A company page: the company, its open jobs, its recruiters, a few employee
- * profiles (users who list an experience at this company), and whether the
- * caller administers it. Null when the slug doesn't resolve.
- */
 export const getCompanyBySlug = query({
   args: { slug: v.string() },
   returns: v.union(
@@ -103,9 +97,6 @@ export const getCompanyBySlug = query({
       .withIndex("by_company", (q) => q.eq("companyId", company._id))
       .collect();
 
-    // Employees: experiences linked to this company -> unique users. Cap at a
-    // few for the company page. experiences has no companyId index, so filter
-    // in-handler over the (small, seeded) table.
     const experiences = await ctx.db.query("experiences").collect();
     const seen = new Set<string>();
     const employees: Array<{
@@ -146,10 +137,6 @@ export const getCompanyBySlug = query({
   },
 });
 
-/**
- * The company administered by the caller (via their active Clerk organization
- * or page ownership), or null. Drives the "Company dashboard" nav entry.
- */
 export const getMyCompany = query({
   args: {},
   returns: v.union(companyDocValidator, v.null()),
@@ -167,11 +154,6 @@ const companyFields = {
   websiteUrl: v.optional(v.string()),
 };
 
-/**
- * Create a company page, linking it to the caller's Clerk organization when
- * an orgId is provided (the "sign up as a company" flow). The caller becomes
- * the fallback owner either way.
- */
 export const createCompany = mutation({
   args: {
     ...companyFields,
@@ -217,7 +199,6 @@ export const createCompany = mutation({
   },
 });
 
-/** Update a company page. Caller must administer the company. */
 export const updateCompany = mutation({
   args: {
     companyId: v.id("companies"),
@@ -243,10 +224,6 @@ export const updateCompany = mutation({
   },
 });
 
-/**
- * Delete a company page along with its jobs, applications, and saved-job rows.
- * Caller must administer the company.
- */
 export const deleteCompany = mutation({
   args: { companyId: v.id("companies") },
   returns: v.null(),
@@ -258,7 +235,6 @@ export const deleteCompany = mutation({
       .withIndex("by_companyId", (q) => q.eq("companyId", company._id))
       .collect();
     const jobIds = new Set(jobs.map((j) => j._id as string));
-    // savedJobs has no by_job index; one scan covers every job being deleted.
     const saves = await ctx.db.query("savedJobs").collect();
     for (const save of saves) {
       if (jobIds.has(save.jobId)) await ctx.db.delete(save._id);
@@ -278,13 +254,14 @@ export const deleteCompany = mutation({
       .collect();
     for (const r of recruiters) await ctx.db.delete(r._id);
 
-    for (const storageId of [company.logoStorageId, company.coverImageStorageId]) {
+    for (const storageId of [
+      company.logoStorageId,
+      company.coverImageStorageId,
+    ]) {
       if (storageId !== undefined) {
         try {
           await ctx.storage.delete(storageId);
-        } catch {
-          // already gone
-        }
+        } catch {}
       }
     }
 

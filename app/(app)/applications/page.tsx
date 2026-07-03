@@ -22,12 +22,11 @@ export default function ApplicationsPage() {
   const applications = useQuery(api.applications.getMyApplications, {});
   const withdraw = useMutation(api.applications.withdraw);
 
-  // Warm up the profile embedding so each application shows its % match.
   const ensureMyProfileEmbedding = useAction(
     api.embeddings.ensureMyProfileEmbedding,
   );
   useEffect(() => {
-    void ensureMyProfileEmbedding().catch(() => {});
+    void ensureMyProfileEmbedding().catch(() => { });
   }, [ensureMyProfileEmbedding]);
 
   return (
@@ -40,7 +39,6 @@ export default function ApplicationsPage() {
           Track every role you&apos;ve applied to and where it stands.
         </p>
       </div>
-
       {applications === undefined ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
@@ -107,7 +105,6 @@ export default function ApplicationsPage() {
                   )}
                 </div>
               </div>
-
               <div className="mt-3 flex items-center justify-between border-t pt-2 text-xs text-muted-foreground">
                 <span className="font-mono text-[11px]">
                   Applied {timeAgo(app.createdAt)} · updated {timeAgo(app.updatedAt)}

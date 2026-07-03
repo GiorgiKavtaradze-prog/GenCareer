@@ -58,7 +58,6 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      {/* ── For job seekers (personal billing) ────────────────────── */}
       <div className="mb-8 text-center">
         <h2 className="flex items-center justify-center gap-2 font-heading text-2xl font-semibold tracking-tight">
           <Sparkles className="h-6 w-6 text-primary" />
@@ -70,7 +69,6 @@ export default async function PricingPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Free */}
         <div className="flex flex-col rounded-3xl border border-ink/10 bg-card p-6">
           <div className="mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Free
@@ -91,7 +89,6 @@ export default async function PricingPage() {
           </Button>
         </div>
 
-        {/* Pro */}
         <div
           className={cn(
             "relative flex flex-col overflow-hidden rounded-3xl bg-ink p-6 text-paper shadow-[0_28px_70px_-30px_rgb(15_23_42/0.6)]",
@@ -152,7 +149,6 @@ export default async function PricingPage() {
         </div>
       </div>
 
-      {/* ── For companies (org-based billing) ─────────────────────── */}
       <div className="mb-8 mt-14 text-center">
         <h2 className="flex items-center justify-center gap-2 font-heading text-2xl font-semibold tracking-tight">
           <Building2 className="h-6 w-6 text-primary" />
@@ -165,7 +161,6 @@ export default async function PricingPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Company Free */}
         <div className="flex flex-col rounded-3xl border border-ink/10 bg-card p-6">
           <div className="mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Company Free
@@ -187,7 +182,6 @@ export default async function PricingPage() {
           </Button>
         </div>
 
-        {/* Company Pro */}
         <div
           className={cn(
             "relative flex flex-col rounded-3xl border-2 bg-card p-6",

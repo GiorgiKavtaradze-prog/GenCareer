@@ -5,22 +5,6 @@ import { QueryCtx, MutationCtx } from "./_generated/server";
 import { getUserByClerkId, careerPhaseValidator } from "./model";
 import { Id } from "./_generated/dataModel";
 
-/**
- * Eve bridge — PUBLIC functions called ONLY by the trusted Eve runtime
- * (a Node process using ConvexHttpClient). There is NO Clerk identity in that
- * context, so every function is guarded by a shared secret instead.
- *
- * Contract:
- *  - Every function takes `secret` and validates it against
- *    process.env.EVE_CONVEX_SECRET (set via: npx convex env set EVE_CONVEX_SECRET ...).
- *  - Every function operates on an explicit Clerk userId string, resolved to a
- *    real Id<"users"> here before touching data or dispatching to internal.ai.*
- *
- * Because these are public, the secret check is the ONLY thing standing between
- * the open internet and these writes. Keep it first, keep it strict.
- */
-
-/** Throw unless the provided secret matches the deployment's EVE_CONVEX_SECRET. */
 function assertEveSecret(secret: string): void {
   const expected = process.env.EVE_CONVEX_SECRET;
   if (expected === undefined || expected.length === 0) {
@@ -31,11 +15,6 @@ function assertEveSecret(secret: string): void {
   }
 }
 
-/**
- * Resolve a Clerk userId to a real users._id after checking the secret.
- * Throws on missing user (callers that need null should catch, but our reads
- * below return null explicitly instead).
- */
 async function authorizeEve(
   ctx: QueryCtx | MutationCtx,
   secret: string,
@@ -45,8 +24,6 @@ async function authorizeEve(
   const user = await getUserByClerkId(ctx, clerkUserId);
   return user?._id ?? null;
 }
-
-// ── Reusable output shapes ──────────────────────────────────────────
 
 const userContextValidator = v.object({
   userId: v.id("users"),
@@ -106,12 +83,6 @@ const jobForMatchingValidator = v.object({
   postedAt: v.number(),
 });
 
-// ── Reads ────────────────────────────────────────────────────────────
-
-/**
- * Full context the LLM needs about a user: profile, experiences, skills, goal
- * (targetRole) and saved jobs. Returns null if the user doesn't exist.
- */
 export const getUserContext = query({
   args: { secret: v.string(), clerkUserId: v.string() },
   returns: v.union(userContextValidator, v.null()),
@@ -188,11 +159,6 @@ export const getUserContext = query({
   },
 });
 
-/**
- * All jobs enriched with company + industry + skillsRequired, for the LLM's
- * job-matching tool to rank/score. clerkUserId is accepted for symmetry /
- * future personalization but the full catalog is returned regardless.
- */
 export const getAllJobsForMatching = query({
   args: { secret: v.string(), clerkUserId: v.optional(v.string()) },
   returns: v.array(jobForMatchingValidator),
@@ -200,7 +166,6 @@ export const getAllJobsForMatching = query({
     assertEveSecret(args.secret);
 
     const allJobs = await ctx.db.query("jobs").order("desc").collect();
-    // Never recommend closed roles.
     const jobs = allJobs.filter((j) => j.status !== "closed");
     return await Promise.all(
       jobs.map(async (job) => {
@@ -226,9 +191,6 @@ export const getAllJobsForMatching = query({
   },
 });
 
-// ── Writes (dispatch to internal.ai.*) ───────────────────────────────
-
-/** Secret-guarded bridge to internal.ai.saveProfileDraft. */
 export const saveProfileDraft = mutation({
   args: {
     secret: v.string(),
@@ -256,12 +218,10 @@ export const saveProfileDraft = mutation({
   },
 });
 
-/** Secret-guarded bridge to internal.ai.saveOutreachDraft. */
 export const saveOutreachDraft = mutation({
   args: {
     secret: v.string(),
     clerkUserId: v.string(),
-    // Accept plain strings from the Eve runtime; normalize to ids below.
     jobId: v.optional(v.string()),
     recruiterId: v.optional(v.string()),
     tone: v.optional(v.string()),
@@ -274,10 +234,10 @@ export const saveOutreachDraft = mutation({
     const userId = await authorizeEve(ctx, args.secret, args.clerkUserId);
     if (userId === null) throw new Error("User not found for clerkUserId");
     const jobId = args.jobId
-      ? ctx.db.normalizeId("jobs", args.jobId) ?? undefined
+      ? (ctx.db.normalizeId("jobs", args.jobId) ?? undefined)
       : undefined;
     const recruiterId = args.recruiterId
-      ? ctx.db.normalizeId("recruiters", args.recruiterId) ?? undefined
+      ? (ctx.db.normalizeId("recruiters", args.recruiterId) ?? undefined)
       : undefined;
     return await ctx.runMutation(internal.ai.saveOutreachDraft, {
       userId,
@@ -291,7 +251,6 @@ export const saveOutreachDraft = mutation({
   },
 });
 
-/** Secret-guarded bridge to internal.ai.saveCareerPlan. */
 export const saveCareerPlan = mutation({
   args: {
     secret: v.string(),
@@ -321,7 +280,6 @@ export const saveCareerPlan = mutation({
   },
 });
 
-/** Secret-guarded bridge to internal.ai.recordAiRun. */
 export const recordAiRun = mutation({
   args: {
     secret: v.string(),

@@ -30,13 +30,11 @@ export default function CompanyPage() {
   const { slug } = useParams<{ slug: string }>();
   const data = useQuery(api.companies.getCompanyBySlug, { slug });
 
-  // Make sure the viewer's profile embedding exists so open roles get a
-  // % match score (same warm-up the jobs page does).
   const ensureMyProfileEmbedding = useAction(
     api.embeddings.ensureMyProfileEmbedding,
   );
   useEffect(() => {
-    void ensureMyProfileEmbedding().catch(() => {});
+    void ensureMyProfileEmbedding().catch(() => { });
   }, [ensureMyProfileEmbedding]);
 
   if (data === undefined) {
@@ -61,60 +59,58 @@ export default function CompanyPage() {
           }
         />
         <div className="p-5">
-        <div className="-mt-13 flex items-start gap-4">
-          <CompanyLogo
-            name={company.name}
-            src={company.logoUrl}
-            className="h-16 w-16 border-4 border-card bg-card"
-          />
-          <div className="mt-9 min-w-0 flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h1 className="font-heading text-2xl font-semibold tracking-tight">
-                {company.name}
-              </h1>
-              {canManage && (
-                <Button
-                  render={<Link href="/company" />}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Manage
-                </Button>
-              )}
+          <div className="-mt-13 flex items-start gap-4">
+            <CompanyLogo
+              name={company.name}
+              src={company.logoUrl}
+              className="h-16 w-16 border-4 border-card bg-card"
+            />
+            <div className="mt-9 min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h1 className="font-heading text-2xl font-semibold tracking-tight">
+                  {company.name}
+                </h1>
+                {canManage && (
+                  <Button
+                    render={<Link href="/company" />}
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Manage
+                  </Button>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">{company.industry}</p>
+              <p className="mt-1.5 flex flex-wrap items-center gap-3 font-mono text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {company.location}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {company.size}
+                </span>
+                {company.websiteUrl && (
+                  <a
+                    href={company.websiteUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 transition-colors hover:text-foreground"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Website
+                  </a>
+                )}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">{company.industry}</p>
-            <p className="mt-1.5 flex flex-wrap items-center gap-3 font-mono text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                {company.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                {company.size}
-              </span>
-              {company.websiteUrl && (
-                <a
-                  href={company.websiteUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1 transition-colors hover:text-foreground"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  Website
-                </a>
-              )}
-            </p>
           </div>
-        </div>
-        <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-          {company.about}
-        </p>
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+            {company.about}
+          </p>
         </div>
       </div>
-
-      {/* Open roles */}
       <section className="rounded-xl border bg-card p-5">
         <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
           <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -153,8 +149,6 @@ export default function CompanyPage() {
           </div>
         )}
       </section>
-
-      {/* Recruiters */}
       {recruiters.length > 0 && (
         <section className="rounded-xl border bg-card p-5">
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
@@ -174,8 +168,6 @@ export default function CompanyPage() {
           </div>
         </section>
       )}
-
-      {/* Employees */}
       {employees.length > 0 && (
         <section className="rounded-xl border bg-card p-5">
           <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">

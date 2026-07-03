@@ -23,12 +23,10 @@ import { orgHasCompanyProBilling } from "./clerkBilling";
 import { cosineSimilarity } from "./embeddings";
 import type { MutationCtx } from "./_generated/server";
 
-/** Jobs with no status are legacy/seeded rows and count as open. */
 const jobIsOpen = (j: Doc<"jobs">) => j.status !== "closed";
 
 const FREE_CAP_ERROR = `Free companies can have up to ${FREE_OPEN_JOB_LIMIT} open jobs. Upgrade to Company Pro for unlimited job posts.`;
 
-/** Open jobs at a company, optionally ignoring the job being transitioned. */
 async function countOpenJobs(
   ctx: QueryCtx | MutationCtx,
   companyId: Id<"companies">,
@@ -41,13 +39,6 @@ async function countOpenJobs(
   return jobs.filter((j) => jobIsOpen(j) && j._id !== excludeJobId).length;
 }
 
-/**
- * Org billing: free companies keep at most FREE_OPEN_JOB_LIMIT jobs open.
- * Company Pro removes the cap — but that is verified against Clerk Billing
- * via the Backend SDK in the public ACTIONS (createJob / setJobStatus), which
- * pass `capExempt: true` into the internal mutations. This transactional
- * check is the enforcement for everyone else.
- */
 async function assertOpenJobSlot(
   ctx: MutationCtx,
   companyId: Id<"companies">,
@@ -81,10 +72,6 @@ const jobWithCompanyValidator = v.object({
   matchScore: v.union(v.number(), v.null()),
 });
 
-/**
- * 0–100 vector match score between a user's profile embedding and a job's
- * embedding, or null when either side lacks an embedding.
- */
 export function computeMatchScore(
   userEmbedding: number[] | undefined,
   jobEmbedding: number[] | undefined,
@@ -94,7 +81,6 @@ export function computeMatchScore(
   return Math.max(0, Math.min(100, Math.round(sim * 100)));
 }
 
-/** Does the current user have this job saved? */
 async function isSavedByMe(
   ctx: QueryCtx,
   meId: Id<"users"> | null,
@@ -110,7 +96,6 @@ async function isSavedByMe(
   return saved !== null;
 }
 
-/** Does the current user have a live (non-withdrawn) application here? */
 async function isAppliedByMe(
   ctx: QueryCtx,
   meId: Id<"users"> | null,
@@ -126,11 +111,6 @@ async function isAppliedByMe(
   return app !== null && app.status !== "withdrawn";
 }
 
-/**
- * Job search. Uses indexes for the seniority/workMode filters (whichever is
- * present) and does free-text search in-handler over title/description/company/
- * skills. Each job is enriched with its company and savedByMe.
- */
 export const getJobs = query({
   args: {
     search: v.optional(v.string()),
@@ -140,11 +120,9 @@ export const getJobs = query({
   returns: v.array(jobWithCompanyValidator),
   handler: async (ctx, args) => {
     const me = await getUserByIdentity(ctx);
-    const myProfile =
-      me !== null ? await getProfileForUser(ctx, me._id) : null;
+    const myProfile = me !== null ? await getProfileForUser(ctx, me._id) : null;
     const myEmbedding = myProfile?.embedding;
 
-    // Pick the most selective indexed filter first.
     let jobs: Doc<"jobs">[];
     if (args.seniority !== undefined) {
       const seniority = args.seniority;
@@ -165,10 +143,8 @@ export const getJobs = query({
       jobs = await ctx.db.query("jobs").order("desc").collect();
     }
 
-    // Closed jobs never show in search.
     jobs = jobs.filter(jobIsOpen);
 
-    // Enrich with company (needed both for output and for text search).
     const enriched = await Promise.all(
       jobs.map(async (job) => {
         const company = await ctx.db.get(job.companyId);
@@ -176,7 +152,6 @@ export const getJobs = query({
       }),
     );
 
-    // In-handler free-text search across title/description/company/skills.
     const term = args.search?.trim().toLowerCase();
     const filtered =
       term && term.length > 0
@@ -194,12 +169,10 @@ export const getJobs = query({
           })
         : enriched;
 
-    // Newest first for a stable ordering.
     filtered.sort((a, b) => b.job.postedAt - a.job.postedAt);
 
     const results = await Promise.all(
       filtered.map(async ({ job, company }) => {
-        // Drop the large embedding array from the client payload.
         const { embedding: _jobEmbedding, ...jobRest } = job;
         return {
           ...jobRest,
@@ -211,8 +184,6 @@ export const getJobs = query({
       }),
     );
 
-    // When the user has an embedding, sort by match score desc (nulls last);
-    // otherwise keep the newest-first order from above.
     if (myEmbedding !== undefined) {
       results.sort((a, b) => {
         if (a.matchScore === null && b.matchScore === null) return 0;
@@ -226,7 +197,6 @@ export const getJobs = query({
   },
 });
 
-/** A single job with its company, recruiter, and savedByMe. Null if missing. */
 export const getJobById = query({
   args: { jobId: v.id("jobs") },
   returns: v.union(
@@ -242,8 +212,7 @@ export const getJobById = query({
   ),
   handler: async (ctx, args) => {
     const me = await getUserByIdentity(ctx);
-    const myProfile =
-      me !== null ? await getProfileForUser(ctx, me._id) : null;
+    const myProfile = me !== null ? await getProfileForUser(ctx, me._id) : null;
     const myEmbedding = myProfile?.embedding;
 
     const job = await ctx.db.get(args.jobId);
@@ -251,11 +220,8 @@ export const getJobById = query({
 
     const company = await ctx.db.get(job.companyId);
     const recruiter =
-      job.recruiterId !== undefined
-        ? await ctx.db.get(job.recruiterId)
-        : null;
+      job.recruiterId !== undefined ? await ctx.db.get(job.recruiterId) : null;
 
-    // Drop the large embedding array from the client payload.
     const { embedding: _jobEmbedding, ...jobRest } = job;
     return {
       ...jobRest,
@@ -268,7 +234,6 @@ export const getJobById = query({
   },
 });
 
-/** Save a job for the current user (idempotent). */
 export const saveJob = mutation({
   args: { jobId: v.id("jobs") },
   returns: v.object({ saved: v.boolean() }),
@@ -296,7 +261,6 @@ export const saveJob = mutation({
   },
 });
 
-/** Remove a saved job for the current user (idempotent). */
 export const unsaveJob = mutation({
   args: { jobId: v.id("jobs") },
   returns: v.object({ saved: v.boolean() }),
@@ -317,7 +281,6 @@ export const unsaveJob = mutation({
   },
 });
 
-/** The current user's saved jobs, enriched with company. Newest saved first. */
 export const getSavedJobs = query({
   args: {},
   returns: v.array(
@@ -344,7 +307,7 @@ export const getSavedJobs = query({
     const results = [];
     for (const row of saved) {
       const job = await ctx.db.get(row.jobId);
-      if (job === null) continue; // job was deleted; skip stale save
+      if (job === null) continue;
       const company = await ctx.db.get(job.companyId);
       results.push({
         ...job,
@@ -358,10 +321,6 @@ export const getSavedJobs = query({
   },
 });
 
-/**
- * Recruiters relevant to a job: the job's explicitly-tied recruiter (if any)
- * plus all recruiters at the job's company, de-duplicated.
- */
 export const getRecruitersForJob = query({
   args: { jobId: v.id("jobs") },
   returns: v.array(recruiterDocValidator),
@@ -386,8 +345,6 @@ export const getRecruitersForJob = query({
   },
 });
 
-// ── Company-side job management (Clerk-org / owner gated) ────────────
-
 const jobEditableFields = {
   title: v.string(),
   salaryMin: v.number(),
@@ -400,10 +357,6 @@ const jobEditableFields = {
   description: v.string(),
 };
 
-/**
- * All jobs for a company the caller administers (open AND closed), each with
- * a live applicant count. Powers the company dashboard.
- */
 export const getCompanyJobs = query({
   args: { companyId: v.id("companies") },
   returns: v.array(
@@ -436,10 +389,6 @@ export const getCompanyJobs = query({
   },
 });
 
-/**
- * Would opening one more job put this company over the free-tier cap?
- * Asserts company admin. `excludeJobId` ignores the job being reopened.
- */
 export const wouldExceedFreeCap = internalQuery({
   args: {
     companyId: v.id("companies"),
@@ -457,7 +406,6 @@ export const wouldExceedFreeCap = internalQuery({
   },
 });
 
-/** The company a job belongs to (asserting admin). Used by setJobStatus. */
 export const getJobCompanyId = internalQuery({
   args: { jobId: v.id("jobs") },
   returns: v.id("companies"),
@@ -469,15 +417,6 @@ export const getJobCompanyId = internalQuery({
   },
 });
 
-/**
- * Post a job for a company the caller administers.
- *
- * ACTION: when the company is at the free-tier open-job cap, the Company Pro
- * plan is verified against Clerk Billing via the Backend SDK (an outbound
- * HTTP call — never JWT claims). The write happens in createJobInternal,
- * which re-asserts admin and re-checks the cap transactionally unless pro
- * was verified here.
- */
 export const createJob = action({
   args: { companyId: v.id("companies"), ...jobEditableFields },
   returns: v.id("jobs"),
@@ -485,9 +424,12 @@ export const createJob = action({
     const identity = await ctx.auth.getUserIdentity();
     if (identity === null) throw new Error("Not authenticated");
     let capExempt = false;
-    const atCap: boolean = await ctx.runQuery(internal.jobs.wouldExceedFreeCap, {
-      companyId: args.companyId,
-    });
+    const atCap: boolean = await ctx.runQuery(
+      internal.jobs.wouldExceedFreeCap,
+      {
+        companyId: args.companyId,
+      },
+    );
     if (atCap) {
       capExempt = await orgHasCompanyProBilling(await getActiveOrgId(ctx));
       if (!capExempt) throw new Error(FREE_CAP_ERROR);
@@ -499,11 +441,6 @@ export const createJob = action({
   },
 });
 
-/**
- * Transactional half of createJob. Auth is NOT delegated to the action:
- * this re-asserts company admin itself. `capExempt` is only true when the
- * action verified Company Pro against Clerk Billing.
- */
 export const createJobInternal = internalMutation({
   args: {
     companyId: v.id("companies"),
@@ -537,7 +474,6 @@ export const createJobInternal = internalMutation({
   },
 });
 
-/** Edit a job belonging to a company the caller administers. */
 export const updateJob = mutation({
   args: { jobId: v.id("jobs"), ...jobEditableFields },
   returns: v.null(),
@@ -560,21 +496,12 @@ export const updateJob = mutation({
       workMode: args.workMode,
       location: args.location.trim(),
       description: args.description.trim(),
-      // The description changed, so any stale embedding must be recomputed.
       embedding: undefined,
     });
     return null;
   },
 });
 
-/**
- * Open / close a job (closed jobs disappear from search).
- *
- * ACTION: reopening a job can push a free company past the open-job cap, so
- * when that would happen the Company Pro plan is verified against Clerk
- * Billing via the Backend SDK. The write happens in setJobStatusInternal,
- * which re-asserts admin and re-checks the cap unless pro was verified here.
- */
 export const setJobStatus = action({
   args: {
     jobId: v.id("jobs"),
@@ -607,11 +534,6 @@ export const setJobStatus = action({
   },
 });
 
-/**
- * Transactional half of setJobStatus. Re-asserts company admin itself.
- * `capExempt` is only true when the action verified Company Pro against
- * Clerk Billing.
- */
 export const setJobStatusInternal = internalMutation({
   args: {
     jobId: v.id("jobs"),
@@ -623,11 +545,7 @@ export const setJobStatusInternal = internalMutation({
     const job = await ctx.db.get(args.jobId);
     if (job === null) throw new Error("Job not found");
     await assertCompanyAdmin(ctx, job.companyId);
-    if (
-      args.status === "open" &&
-      job.status === "closed" &&
-      !args.capExempt
-    ) {
+    if (args.status === "open" && job.status === "closed" && !args.capExempt) {
       await assertOpenJobSlot(ctx, job.companyId, job._id);
     }
     await ctx.db.patch(job._id, { status: args.status });
@@ -635,7 +553,6 @@ export const setJobStatusInternal = internalMutation({
   },
 });
 
-/** Delete a job plus its applications and saved-job rows. */
 export const deleteJob = mutation({
   args: { jobId: v.id("jobs") },
   returns: v.null(),
@@ -650,7 +567,6 @@ export const deleteJob = mutation({
       .collect();
     for (const app of applications) await ctx.db.delete(app._id);
 
-    // savedJobs has no by_job index; the table stays small enough to scan.
     const saves = await ctx.db.query("savedJobs").collect();
     for (const save of saves) {
       if (save.jobId === job._id) await ctx.db.delete(save._id);

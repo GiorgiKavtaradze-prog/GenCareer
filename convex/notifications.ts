@@ -11,7 +11,6 @@ const notificationItemValidator = v.object({
   actor: v.union(authorSummaryValidator, v.null()),
 });
 
-/** The caller's notifications, newest first (capped), with actor summaries. */
 export const getMyNotifications = query({
   args: { limit: v.optional(v.number()) },
   returns: v.array(notificationItemValidator),
@@ -48,7 +47,6 @@ export const getMyNotifications = query({
   },
 });
 
-/** Count of unread notifications (drives the bell badge). */
 export const getUnreadCount = query({
   args: {},
   returns: v.number(),
@@ -65,7 +63,6 @@ export const getUnreadCount = query({
   },
 });
 
-/** Mark one notification read. */
 export const markRead = mutation({
   args: { notificationId: v.id("notifications") },
   returns: v.null(),
@@ -81,7 +78,6 @@ export const markRead = mutation({
   },
 });
 
-/** Mark all of the caller's notifications read. */
 export const markAllRead = mutation({
   args: {},
   returns: v.null(),
@@ -99,7 +95,6 @@ export const markAllRead = mutation({
   },
 });
 
-/** Delete one of the caller's notifications. */
 export const deleteNotification = mutation({
   args: { notificationId: v.id("notifications") },
   returns: v.null(),

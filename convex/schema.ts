@@ -1,29 +1,14 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-/**
- * CareerConnect schema — 20 tables.
- *
- * Conventions:
- * - Every foreign key uses v.id("<table>").
- * - Optional fields use v.optional(...); absent value == "not set".
- * - Custom indexes are named after their columns in order (by_a_and_b).
- * - _creationTime is appended to every index automatically by Convex; it is
- *   never listed as an explicit index column.
- * - Image fields keep a resolved public URL (xxxUrl) for painless rendering
- *   plus the backing v.id("_storage") (xxxStorageId) when the file was
- *   uploaded through Convex storage, so replacements can delete the old file.
- */
 export default defineSchema({
   users: defineTable({
     clerkId: v.string(),
     name: v.string(),
     email: v.string(),
     imageUrl: v.optional(v.string()),
-    // Set when the avatar was uploaded via Convex storage (custom avatar);
-    // absent when imageUrl mirrors the Clerk profile picture.
     imageStorageId: v.optional(v.id("_storage")),
-    username: v.string(), // url slug, unique
+    username: v.string(),
     createdAt: v.number(),
   })
     .index("by_clerkId", ["clerkId"])
@@ -42,9 +27,7 @@ export default defineSchema({
     openToWork: v.boolean(),
     coverImageUrl: v.optional(v.string()),
     coverImageStorageId: v.optional(v.id("_storage")),
-    // Vector match: 1536-dim embedding of the profile text (text-embedding-3-small).
     embedding: v.optional(v.array(v.float64())),
-    // The profile text that produced `embedding`, for cache-invalidation.
     embeddingText: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
 
@@ -53,8 +36,8 @@ export default defineSchema({
     title: v.string(),
     company: v.string(),
     companyId: v.optional(v.id("companies")),
-    startDate: v.string(), // "YYYY-MM"
-    endDate: v.optional(v.string()), // absent == present
+    startDate: v.string(),
+    endDate: v.optional(v.string()),
     description: v.string(),
     location: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
@@ -62,10 +45,10 @@ export default defineSchema({
   education: defineTable({
     userId: v.id("users"),
     school: v.string(),
-    degree: v.string(), // e.g. "BSc"
-    field: v.string(), // e.g. "Computer Science"
-    startYear: v.string(), // "YYYY"
-    endYear: v.optional(v.string()), // absent == present
+    degree: v.string(),
+    field: v.string(),
+    startYear: v.string(),
+    endYear: v.optional(v.string()),
     description: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
 
@@ -75,7 +58,6 @@ export default defineSchema({
     endorsements: v.number(),
   }).index("by_userId", ["userId"]),
 
-  // One row per user who endorsed a skill (keeps `endorsements` honest).
   skillEndorsements: defineTable({
     skillId: v.id("skills"),
     endorserId: v.id("users"),
@@ -83,21 +65,17 @@ export default defineSchema({
 
   companies: defineTable({
     name: v.string(),
-    slug: v.string(), // unique
+    slug: v.string(),
     logoUrl: v.optional(v.string()),
     logoStorageId: v.optional(v.id("_storage")),
     coverImageUrl: v.optional(v.string()),
     coverImageStorageId: v.optional(v.id("_storage")),
     industry: v.string(),
-    size: v.string(), // e.g. "51-200"
+    size: v.string(),
     location: v.string(),
     about: v.string(),
     websiteUrl: v.optional(v.string()),
-    // Clerk Organization id ("org_…") when the company signed up through the
-    // "Join as a company" flow. Members of that org administer the company.
     orgId: v.optional(v.string()),
-    // The user who created the company page (fallback admin when the JWT has
-    // no org claims).
     ownerId: v.optional(v.id("users")),
   })
     .index("by_slug", ["slug"])
@@ -108,9 +86,7 @@ export default defineSchema({
     title: v.string(),
     companyId: v.id("companies"),
     recruiterId: v.optional(v.id("recruiters")),
-    // The company member who posted the job (absent for seeded jobs).
     createdBy: v.optional(v.id("users")),
-    // absent == "open" (legacy/seeded rows)
     status: v.optional(v.union(v.literal("open"), v.literal("closed"))),
     salaryMin: v.number(),
     salaryMax: v.number(),
@@ -132,7 +108,6 @@ export default defineSchema({
     location: v.string(),
     description: v.string(),
     postedAt: v.number(),
-    // Vector match: 1536-dim embedding of the job text (text-embedding-3-small).
     embedding: v.optional(v.array(v.float64())),
   })
     .index("by_companyId", ["companyId"])
@@ -142,7 +117,7 @@ export default defineSchema({
   applications: defineTable({
     jobId: v.id("jobs"),
     userId: v.id("users"),
-    companyId: v.id("companies"), // denormalized for the company dashboard
+    companyId: v.id("companies"),
     coverNote: v.optional(v.string()),
     status: v.union(
       v.literal("submitted"),
@@ -152,8 +127,7 @@ export default defineSchema({
       v.literal("rejected"),
       v.literal("withdrawn"),
     ),
-    // Every stage transition, oldest first. Rows created before this field
-    // existed have it undefined — the UI synthesizes "submitted @ createdAt".
+
     statusHistory: v.optional(
       v.array(
         v.object({
@@ -192,7 +166,6 @@ export default defineSchema({
     likeCount: v.number(),
     commentCount: v.number(),
   }).index("by_author", ["authorId"]),
-  // feed reads use the built-in by_creation_time index
 
   comments: defineTable({
     postId: v.id("posts"),
@@ -216,18 +189,17 @@ export default defineSchema({
     .index("by_follower_and_following", ["followerId", "followingId"]),
 
   notifications: defineTable({
-    userId: v.id("users"), // recipient
-    actorId: v.optional(v.id("users")), // who triggered it
+    userId: v.id("users"),
+    actorId: v.optional(v.id("users")),
     type: v.union(
       v.literal("like"),
       v.literal("comment"),
       v.literal("follow"),
       v.literal("endorsement"),
-      v.literal("application"), // someone applied to your job
-      v.literal("application_status"), // your application changed status
+      v.literal("application"),
+      v.literal("application_status"),
     ),
     message: v.string(),
-    // Optional deep-link targets, depending on type.
     postId: v.optional(v.id("posts")),
     jobId: v.optional(v.id("jobs")),
     applicationId: v.optional(v.id("applications")),

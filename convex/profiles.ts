@@ -12,11 +12,6 @@ import {
   postDocValidator,
 } from "./model";
 
-/**
- * Public profile page payload: user + profile + experiences + education +
- * skills (with endorsedByMe) + recent posts. Returns null when no user has
- * that username.
- */
 export const getProfileByUsername = query({
   args: { username: v.string() },
   returns: v.union(
@@ -26,7 +21,6 @@ export const getProfileByUsername = query({
       experiences: v.array(
         v.object({
           ...experienceDocValidator.fields,
-          // Slug of the linked companies row, for click-through to its page.
           companySlug: v.union(v.string(), v.null()),
         }),
       ),
@@ -55,7 +49,6 @@ export const getProfileByUsername = query({
       .query("experiences")
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .collect();
-    // Newest first (present roles on top). "YYYY-MM" sorts lexicographically.
     experienceRows.sort((a, b) => b.startDate.localeCompare(a.startDate));
     const experiences = await Promise.all(
       experienceRows.map(async (exp) => ({
@@ -104,10 +97,6 @@ export const getProfileByUsername = query({
   },
 });
 
-/**
- * Update the current user's profile. Only provided fields are changed. Creates
- * the profile row if it somehow doesn't exist yet.
- */
 export const updateProfile = mutation({
   args: {
     headline: v.optional(v.string()),
@@ -162,7 +151,6 @@ export const updateProfile = mutation({
     if (args.headline !== undefined) patch.headline = args.headline;
     if (args.about !== undefined) patch.about = args.about;
     if (args.location !== undefined) patch.location = args.location;
-    // Optional-text fields: an empty string clears the field.
     if (args.pronouns !== undefined) {
       patch.pronouns = args.pronouns.trim() || undefined;
     }
@@ -188,11 +176,6 @@ export const updateProfile = mutation({
   },
 });
 
-/**
- * Apply a saved AI profile draft to the live profile: copy headline + about
- * into the profile, add suggestedSkills as new skill rows (skipping ones the
- * user already has), and mark the draft "applied".
- */
 export const applyProfileDraft = mutation({
   args: { draftId: v.id("profileDrafts") },
   returns: v.object({
@@ -209,7 +192,6 @@ export const applyProfileDraft = mutation({
       throw new Error("Not authorized to apply this draft");
     }
 
-    // Upsert the profile with the draft's headline/about + targetRole.
     let profile = await getProfileForUser(ctx, me._id);
     if (profile === null) {
       const profileId = await ctx.db.insert("profiles", {
@@ -233,12 +215,13 @@ export const applyProfileDraft = mutation({
       });
     }
 
-    // Add suggested skills that the user doesn't already have (case-insensitive).
     const existingSkills = await ctx.db
       .query("skills")
       .withIndex("by_userId", (q) => q.eq("userId", me._id))
       .collect();
-    const have = new Set(existingSkills.map((s) => s.name.toLowerCase().trim()));
+    const have = new Set(
+      existingSkills.map((s) => s.name.toLowerCase().trim()),
+    );
 
     let skillsAdded = 0;
     for (const name of draft.suggestedSkills) {
@@ -259,7 +242,6 @@ export const applyProfileDraft = mutation({
   },
 });
 
-/** Update the current user's display name. */
 export const updateAccountName = mutation({
   args: { name: v.string() },
   returns: v.null(),
@@ -282,7 +264,6 @@ const experienceFields = {
   location: v.optional(v.string()),
 };
 
-/** Add an experience entry to the current user's profile. */
 export const addExperience = mutation({
   args: experienceFields,
   returns: v.id("experiences"),
@@ -294,14 +275,15 @@ export const addExperience = mutation({
       title: args.title,
       company: args.company,
       startDate: args.startDate,
-      endDate: args.endDate && args.endDate.length > 0 ? args.endDate : undefined,
+      endDate:
+        args.endDate && args.endDate.length > 0 ? args.endDate : undefined,
       description: args.description,
-      location: args.location && args.location.length > 0 ? args.location : undefined,
+      location:
+        args.location && args.location.length > 0 ? args.location : undefined,
     });
   },
 });
 
-/** Replace all fields of one of the current user's experiences. */
 export const updateExperience = mutation({
   args: { experienceId: v.id("experiences"), ...experienceFields },
   returns: v.null(),
@@ -316,15 +298,16 @@ export const updateExperience = mutation({
       title: args.title,
       company: args.company,
       startDate: args.startDate,
-      endDate: args.endDate && args.endDate.length > 0 ? args.endDate : undefined,
+      endDate:
+        args.endDate && args.endDate.length > 0 ? args.endDate : undefined,
       description: args.description,
-      location: args.location && args.location.length > 0 ? args.location : undefined,
+      location:
+        args.location && args.location.length > 0 ? args.location : undefined,
     });
     return null;
   },
 });
 
-/** Delete one of the current user's experiences. */
 export const deleteExperience = mutation({
   args: { experienceId: v.id("experiences") },
   returns: v.null(),
@@ -340,7 +323,6 @@ export const deleteExperience = mutation({
   },
 });
 
-/** Add a skill (case-insensitive dedupe). Returns null if it already exists. */
 export const addSkill = mutation({
   args: { name: v.string() },
   returns: v.union(v.id("skills"), v.null()),
@@ -353,14 +335,19 @@ export const addSkill = mutation({
       .query("skills")
       .withIndex("by_userId", (q) => q.eq("userId", me._id))
       .collect();
-    if (existing.some((s) => s.name.toLowerCase().trim() === name.toLowerCase())) {
+    if (
+      existing.some((s) => s.name.toLowerCase().trim() === name.toLowerCase())
+    ) {
       return null;
     }
-    return await ctx.db.insert("skills", { userId: me._id, name, endorsements: 0 });
+    return await ctx.db.insert("skills", {
+      userId: me._id,
+      name,
+      endorsements: 0,
+    });
   },
 });
 
-/** Remove one of the current user's skills (and its endorsement rows). */
 export const removeSkill = mutation({
   args: { skillId: v.id("skills") },
   returns: v.null(),
@@ -381,10 +368,6 @@ export const removeSkill = mutation({
   },
 });
 
-/**
- * Endorse / un-endorse someone else's skill. Keeps the denormalized
- * `endorsements` count in sync and notifies the skill's owner.
- */
 export const toggleEndorsement = mutation({
   args: { skillId: v.id("skills") },
   returns: v.object({ endorsed: v.boolean(), endorsements: v.number() }),
@@ -427,8 +410,6 @@ export const toggleEndorsement = mutation({
   },
 });
 
-// ── Education CRUD ───────────────────────────────────────────────────
-
 const educationFields = {
   school: v.string(),
   degree: v.string(),
@@ -438,7 +419,6 @@ const educationFields = {
   description: v.optional(v.string()),
 };
 
-/** Add an education entry to the current user's profile. */
 export const addEducation = mutation({
   args: educationFields,
   returns: v.id("education"),
@@ -454,7 +434,8 @@ export const addEducation = mutation({
       degree: args.degree.trim(),
       field: args.field.trim(),
       startYear: args.startYear,
-      endYear: args.endYear && args.endYear.length > 0 ? args.endYear : undefined,
+      endYear:
+        args.endYear && args.endYear.length > 0 ? args.endYear : undefined,
       description:
         args.description && args.description.trim().length > 0
           ? args.description.trim()
@@ -463,7 +444,6 @@ export const addEducation = mutation({
   },
 });
 
-/** Replace all fields of one of the current user's education entries. */
 export const updateEducation = mutation({
   args: { educationId: v.id("education"), ...educationFields },
   returns: v.null(),
@@ -482,7 +462,8 @@ export const updateEducation = mutation({
       degree: args.degree.trim(),
       field: args.field.trim(),
       startYear: args.startYear,
-      endYear: args.endYear && args.endYear.length > 0 ? args.endYear : undefined,
+      endYear:
+        args.endYear && args.endYear.length > 0 ? args.endYear : undefined,
       description:
         args.description && args.description.trim().length > 0
           ? args.description.trim()
@@ -492,7 +473,6 @@ export const updateEducation = mutation({
   },
 });
 
-/** Delete one of the current user's education entries. */
 export const deleteEducation = mutation({
   args: { educationId: v.id("education") },
   returns: v.null(),

@@ -29,10 +29,8 @@ import {
 
 type CompanyJob = FunctionReturnType<typeof api.jobs.getCompanyJobs>[number];
 
-/** How many applicants to preview inline before "View all". */
 const PREVIEW_LIMIT = 4;
 
-/** Job posts rendered as expandable accordions with an applicant preview. */
 export function JobPostList({
   companyId,
   jobs,
@@ -62,7 +60,6 @@ function JobPostRow({
   const deleteJob = useMutation(api.jobs.deleteJob);
   const closed = job.status === "closed";
 
-  // Lazily load applicants only once the accordion is opened.
   const applicants = useQuery(
     api.applications.getApplicantsForCompany,
     open ? { companyId, jobId: job._id } : "skip",
@@ -72,7 +69,6 @@ function JobPostRow({
 
   return (
     <div className="rounded-lg border">
-      {/* Accordion header */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3">
         <button
           type="button"
@@ -81,9 +77,8 @@ function JobPostRow({
           className="flex min-w-0 flex-1 items-start gap-2 text-left"
         >
           <ChevronRight
-            className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-              open ? "rotate-90" : ""
-            }`}
+            className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""
+              }`}
           />
           <span className="min-w-0">
             <span className="flex items-center gap-2">
@@ -160,8 +155,6 @@ function JobPostRow({
           />
         </div>
       </div>
-
-      {/* Accordion body: applicant preview */}
       {open && (
         <div className="border-t p-3">
           {applicants === undefined ? (

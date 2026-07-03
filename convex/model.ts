@@ -3,23 +3,6 @@ import type { UserIdentity } from "convex/server";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
 
-/**
- * Shared helpers + reusable validator shapes.
- *
- * These are plain functions / validator objects, NOT registered Convex
- * functions, so they need no args/returns validators of their own. Registered
- * functions in the other files import from here.
- */
-
-// ── Identity resolution ──────────────────────────────────────────────
-
-/**
- * Resolve the current signed-in user from the Clerk identity.
- * Returns null when there is no authenticated caller. In queries, also returns
- * null when no users row matches. In mutations, a missing row is recreated
- * from the identity claims instead — a signed-in user must never be orphaned
- * (e.g. after `pnpm seed` wipes the users table mid-session).
- */
 export async function getUserByIdentity(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Doc<"users"> | null> {
@@ -36,11 +19,6 @@ export async function getUserByIdentity(
   return null;
 }
 
-/**
- * Create the users row (+ blank profile) from Clerk identity token claims.
- * Shared by users.upsertCurrentUser and the mutation path of
- * getUserByIdentity.
- */
 export async function createUserFromIdentity(
   ctx: MutationCtx,
   identity: UserIdentity,
@@ -77,7 +55,6 @@ export async function createUserFromIdentity(
   return created;
 }
 
-/** Resolve a users row from a Clerk userId string (used by the Eve bridge). */
 export async function getUserByClerkId(
   ctx: QueryCtx | MutationCtx,
   clerkId: string,
@@ -88,7 +65,6 @@ export async function getUserByClerkId(
     .unique();
 }
 
-/** Get the current user's profile, or null. */
 export async function getProfileForUser(
   ctx: QueryCtx | MutationCtx,
   userId: Id<"users">,
@@ -99,13 +75,6 @@ export async function getProfileForUser(
     .unique();
 }
 
-// ── Company / Clerk-Organization authorization ───────────────────────
-
-/**
- * The Clerk organization id ("org_…") active on the caller's session, or null.
- * Comes from the `org_id` claim on the Convex JWT template (or the `o.id`
- * claim Clerk emits by default on session tokens with an active org).
- */
 export async function getActiveOrgId(
   ctx: QueryCtx | MutationCtx | ActionCtx,
 ): Promise<string | null> {
@@ -123,20 +92,9 @@ export async function getActiveOrgId(
   return null;
 }
 
-/**
- * Org-based billing. Keep in sync with lib/ai-features.ts
- * (COMPANY_PRO_PLAN / FREE_OPEN_JOB_LIMIT) — convex/ can't import from lib/.
- *
- * Whether an org actually HAS the Company Pro plan is checked against Clerk
- * Billing via the Backend SDK — see convex/clerkBilling.ts. It must never be
- * derived from JWT claims: Clerk JWT templates cannot emit the session-only
- * `pla`/`fea` billing claims, so a claims check silently reports every org
- * as free tier.
- */
 export const COMPANY_PRO_PLAN = "company_pro";
 export const FREE_OPEN_JOB_LIMIT = 3;
 
-/** Is the current caller an admin of this company (org member or owner)? */
 export async function isCompanyAdmin(
   ctx: QueryCtx | MutationCtx,
   company: Doc<"companies">,
@@ -150,10 +108,6 @@ export async function isCompanyAdmin(
   return false;
 }
 
-/**
- * Load a company and assert the caller may administer it. Returns
- * { company, me } or throws.
- */
 export async function assertCompanyAdmin(
   ctx: QueryCtx | MutationCtx,
   companyId: Id<"companies">,
@@ -168,10 +122,6 @@ export async function assertCompanyAdmin(
   return { company, me };
 }
 
-/**
- * The company the caller administers: the one owned by them, or the one
- * linked to their active Clerk organization. Null when neither exists.
- */
 export async function getMyCompanyDoc(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Doc<"companies"> | null> {
@@ -194,11 +144,6 @@ export async function getMyCompanyDoc(
   return null;
 }
 
-// ── Notifications ────────────────────────────────────────────────────
-
-/**
- * Insert a notification, skipping self-notifications (actor == recipient).
- */
 export async function notify(
   ctx: MutationCtx,
   args: {
@@ -225,7 +170,6 @@ export async function notify(
   });
 }
 
-/** Build a stable, url-safe slug from a company name. */
 export function baseSlugFrom(name: string): string {
   const slug = name
     .toLowerCase()
@@ -236,7 +180,6 @@ export function baseSlugFrom(name: string): string {
   return slug.length > 0 ? slug : "company";
 }
 
-/** Ensure a company slug is unique by appending -2, -3, ... as needed. */
 export async function uniqueCompanySlug(
   ctx: QueryCtx | MutationCtx,
   base: string,
@@ -254,10 +197,6 @@ export async function uniqueCompanySlug(
   }
 }
 
-/**
- * Build a stable, url-safe base slug from an email/name. Callers still need to
- * de-duplicate against existing usernames.
- */
 export function baseUsernameFrom(email: string, name: string): string {
   const fromEmail = email.split("@")[0] ?? "";
   const source = fromEmail.length > 0 ? fromEmail : name;
@@ -270,14 +209,12 @@ export function baseUsernameFrom(email: string, name: string): string {
   return slug.length > 0 ? slug : "user";
 }
 
-/** Ensure a username slug is unique by appending -2, -3, ... as needed. */
 export async function uniqueUsername(
   ctx: QueryCtx | MutationCtx,
   base: string,
 ): Promise<string> {
   let candidate = base;
   let n = 1;
-  // Bounded loop: usernames collide rarely; this is O(collisions).
   while (true) {
     const existing = await ctx.db
       .query("users")
@@ -289,9 +226,6 @@ export async function uniqueUsername(
   }
 }
 
-// ── Reusable validator shapes ────────────────────────────────────────
-
-/** Public author summary embedded in feed / profile payloads. */
 export const authorSummaryValidator = v.object({
   _id: v.id("users"),
   name: v.string(),
@@ -300,7 +234,6 @@ export const authorSummaryValidator = v.object({
   headline: v.union(v.string(), v.null()),
 });
 
-/** Full users document validator. */
 export const userDocValidator = v.object({
   _id: v.id("users"),
   _creationTime: v.number(),
@@ -313,7 +246,6 @@ export const userDocValidator = v.object({
   createdAt: v.number(),
 });
 
-/** Full profiles document validator. */
 export const profileDocValidator = v.object({
   _id: v.id("profiles"),
   _creationTime: v.number(),
@@ -333,7 +265,6 @@ export const profileDocValidator = v.object({
   embeddingText: v.optional(v.string()),
 });
 
-/** Full education document validator. */
 export const educationDocValidator = v.object({
   _id: v.id("education"),
   _creationTime: v.number(),
@@ -346,7 +277,6 @@ export const educationDocValidator = v.object({
   description: v.optional(v.string()),
 });
 
-/** Full experiences document validator. */
 export const experienceDocValidator = v.object({
   _id: v.id("experiences"),
   _creationTime: v.number(),
@@ -360,7 +290,6 @@ export const experienceDocValidator = v.object({
   location: v.optional(v.string()),
 });
 
-/** Full skills document validator. */
 export const skillDocValidator = v.object({
   _id: v.id("skills"),
   _creationTime: v.number(),
@@ -369,7 +298,6 @@ export const skillDocValidator = v.object({
   endorsements: v.number(),
 });
 
-/** Full companies document validator. */
 export const companyDocValidator = v.object({
   _id: v.id("companies"),
   _creationTime: v.number(),
@@ -388,7 +316,6 @@ export const companyDocValidator = v.object({
   ownerId: v.optional(v.id("users")),
 });
 
-/** Application status validator (shared by applications.ts + UI payloads). */
 export const applicationStatusValidator = v.union(
   v.literal("submitted"),
   v.literal("reviewed"),
@@ -398,7 +325,6 @@ export const applicationStatusValidator = v.union(
   v.literal("withdrawn"),
 );
 
-/** Full applications document validator. */
 export const applicationDocValidator = v.object({
   _id: v.id("applications"),
   _creationTime: v.number(),
@@ -414,7 +340,6 @@ export const applicationDocValidator = v.object({
   updatedAt: v.number(),
 });
 
-/** Full notifications document validator. */
 export const notificationDocValidator = v.object({
   _id: v.id("notifications"),
   _creationTime: v.number(),
@@ -436,7 +361,6 @@ export const notificationDocValidator = v.object({
   createdAt: v.number(),
 });
 
-/** Full jobs document validator. */
 export const jobDocValidator = v.object({
   _id: v.id("jobs"),
   _creationTime: v.number(),
@@ -468,7 +392,6 @@ export const jobDocValidator = v.object({
   embedding: v.optional(v.array(v.float64())),
 });
 
-/** Full recruiters document validator. */
 export const recruiterDocValidator = v.object({
   _id: v.id("recruiters"),
   _creationTime: v.number(),
@@ -480,7 +403,6 @@ export const recruiterDocValidator = v.object({
   email: v.optional(v.string()),
 });
 
-/** Full posts document validator. */
 export const postDocValidator = v.object({
   _id: v.id("posts"),
   _creationTime: v.number(),
@@ -499,7 +421,6 @@ export const postDocValidator = v.object({
   commentCount: v.number(),
 });
 
-/** Full profileDrafts document validator. */
 export const profileDraftDocValidator = v.object({
   _id: v.id("profileDrafts"),
   _creationTime: v.number(),
@@ -510,15 +431,10 @@ export const profileDraftDocValidator = v.object({
   suggestedSkills: v.array(v.string()),
   explanation: v.string(),
   targetRole: v.optional(v.string()),
-  status: v.union(
-    v.literal("draft"),
-    v.literal("saved"),
-    v.literal("applied"),
-  ),
+  status: v.union(v.literal("draft"), v.literal("saved"), v.literal("applied")),
   createdAt: v.number(),
 });
 
-/** Full outreachDrafts document validator. */
 export const outreachDraftDocValidator = v.object({
   _id: v.id("outreachDrafts"),
   _creationTime: v.number(),
@@ -533,14 +449,12 @@ export const outreachDraftDocValidator = v.object({
   createdAt: v.number(),
 });
 
-/** careerPlans phase sub-object validator (reused by ai.ts + eve.ts args). */
 export const careerPhaseValidator = v.object({
   period: v.union(v.literal("30"), v.literal("60"), v.literal("90")),
   focus: v.string(),
   milestones: v.array(v.string()),
 });
 
-/** Full careerPlans document validator. */
 export const careerPlanDocValidator = v.object({
   _id: v.id("careerPlans"),
   _creationTime: v.number(),
@@ -556,7 +470,6 @@ export const careerPlanDocValidator = v.object({
   createdAt: v.number(),
 });
 
-/** Full aiRuns document validator. */
 export const aiRunDocValidator = v.object({
   _id: v.id("aiRuns"),
   _creationTime: v.number(),

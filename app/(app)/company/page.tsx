@@ -61,7 +61,6 @@ export default function CompanyDashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
-      {/* Header */}
       <div className="overflow-hidden rounded-xl border bg-card">
         <div
           className="relative h-32 bg-gradient-to-r from-primary/40 to-primary/10 bg-cover bg-center"
@@ -153,12 +152,10 @@ export default function CompanyDashboardPage() {
         </div>
       </div>
 
-      {/* Org billing */}
       <CompanyBillingCard
         openJobs={(jobs ?? []).filter((j) => j.status !== "closed").length}
       />
 
-      {/* Jobs */}
       <section className="rounded-xl border bg-card p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
@@ -188,13 +185,11 @@ export default function CompanyDashboardPage() {
         )}
       </section>
 
-      {/* Applicants */}
       <ApplicantsPanel
         companyId={company._id}
         jobs={(jobs ?? []).map((j) => ({ _id: j._id, title: j.title }))}
       />
 
-      {/* Danger zone */}
       <section className="rounded-xl border border-destructive/30 bg-card p-5">
         <h2 className="font-heading text-lg font-semibold tracking-tight text-destructive">
           Danger zone

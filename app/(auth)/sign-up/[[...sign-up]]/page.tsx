@@ -6,13 +6,6 @@ import { Briefcase, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { localRedirectPath } from "@/lib/safe-redirect";
 
-/**
- * Sign-up with an account-type chooser:
- * - Job seeker → default flow, lands on the feed.
- * - Company   → lands on /onboarding/company, which creates a Clerk
- *   Organization and the linked company page.
- * Already-signed-in visitors are bounced to their destination directly.
- */
 export default async function SignUpPage({
   searchParams,
 }: {
@@ -59,13 +52,11 @@ export default async function SignUpPage({
           We&apos;re hiring
         </Link>
       </div>
-
       <p className="text-center text-sm text-muted-foreground">
         {isCompany
           ? "Create a company account — you'll set up your organization, company page, and job posts next."
           : "Create a free account to build your profile, follow people, and apply to jobs."}
       </p>
-
       <SignUp
         key={isCompany ? "company" : "person"}
         forceRedirectUrl={isCompany ? "/onboarding/company" : undefined}

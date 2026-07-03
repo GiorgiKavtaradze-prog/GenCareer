@@ -8,7 +8,6 @@ import {
   aiRunDocValidator,
 } from "./model";
 
-/** Current user's profile drafts, newest first. */
 export const getMyProfileDrafts = query({
   args: {},
   returns: v.array(profileDraftDocValidator),
@@ -23,7 +22,6 @@ export const getMyProfileDrafts = query({
   },
 });
 
-/** Current user's outreach drafts, newest first. */
 export const getMyOutreachDrafts = query({
   args: {},
   returns: v.array(outreachDraftDocValidator),
@@ -38,7 +36,6 @@ export const getMyOutreachDrafts = query({
   },
 });
 
-/** Current user's career plans, newest first. */
 export const getMyCareerPlans = query({
   args: {},
   returns: v.array(careerPlanDocValidator),
@@ -53,7 +50,6 @@ export const getMyCareerPlans = query({
   },
 });
 
-/** Current user's most recent career plan, or null. */
 export const getLatestCareerPlan = query({
   args: {},
   returns: v.union(careerPlanDocValidator, v.null()),
@@ -68,7 +64,6 @@ export const getLatestCareerPlan = query({
   },
 });
 
-/** Delete one of the current user's outreach drafts. */
 export const deleteOutreachDraft = mutation({
   args: { draftId: v.id("outreachDrafts") },
   returns: v.null(),
@@ -84,7 +79,6 @@ export const deleteOutreachDraft = mutation({
   },
 });
 
-/** Delete one of the current user's profile drafts. */
 export const deleteProfileDraft = mutation({
   args: { draftId: v.id("profileDrafts") },
   returns: v.null(),
@@ -100,7 +94,6 @@ export const deleteProfileDraft = mutation({
   },
 });
 
-/** Delete one of the current user's career plans. */
 export const deleteCareerPlan = mutation({
   args: { planId: v.id("careerPlans") },
   returns: v.null(),
@@ -116,7 +109,6 @@ export const deleteCareerPlan = mutation({
   },
 });
 
-/** Current user's AI run history, newest first. */
 export const getMyAiRuns = query({
   args: {},
   returns: v.array(aiRunDocValidator),

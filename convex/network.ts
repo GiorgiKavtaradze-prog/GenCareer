@@ -3,7 +3,6 @@ import { query, mutation } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { getUserByIdentity, notify, authorSummaryValidator } from "./model";
 
-/** Follow / unfollow a user. Returns the resulting following state. */
 export const toggleFollow = mutation({
   args: { userId: v.id("users") },
   returns: v.object({ following: v.boolean() }),
@@ -41,7 +40,6 @@ export const toggleFollow = mutation({
   },
 });
 
-/** Follower/following counts + whether the caller follows this user. */
 export const getFollowStats = query({
   args: { userId: v.id("users") },
   returns: v.object({
@@ -71,10 +69,6 @@ export const getFollowStats = query({
   },
 });
 
-/**
- * People suggestions for the feed sidebar: recently joined members the caller
- * doesn't follow yet.
- */
 export const getSuggestedPeople = query({
   args: { limit: v.optional(v.number()) },
   returns: v.array(authorSummaryValidator),

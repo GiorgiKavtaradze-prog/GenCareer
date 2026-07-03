@@ -8,15 +8,6 @@ import {
   assertCompanyAdmin,
 } from "./model";
 
-/**
- * Image uploads flow through Convex file storage:
- *   1. client calls generateUploadUrl → POSTs the file to it → gets storageId
- *   2. client calls one of the set* mutations below with that storageId
- * Each set* mutation resolves the public URL, patches the target document,
- * and deletes the previously-uploaded file (if any) so storage doesn't leak.
- */
-
-/** Short-lived URL the client POSTs an image file to. Auth required. */
 export const generateUploadUrl = mutation({
   args: {},
   returns: v.string(),
@@ -27,7 +18,6 @@ export const generateUploadUrl = mutation({
   },
 });
 
-/** Resolve a storage id to its public URL or throw if the upload is missing. */
 async function urlFor(
   ctx: MutationCtx,
   storageId: Id<"_storage">,
@@ -37,7 +27,6 @@ async function urlFor(
   return url;
 }
 
-/** Delete a previously-uploaded file, ignoring already-deleted files. */
 async function deleteOld(
   ctx: MutationCtx,
   storageId: Id<"_storage"> | undefined,
@@ -45,12 +34,9 @@ async function deleteOld(
   if (storageId === undefined) return;
   try {
     await ctx.storage.delete(storageId);
-  } catch {
-    // already gone — nothing to clean up
-  }
+  } catch {}
 }
 
-/** Set (or clear) the current user's avatar. */
 export const setMyAvatar = mutation({
   args: { storageId: v.optional(v.id("_storage")) },
   returns: v.union(v.string(), v.null()),
@@ -74,7 +60,6 @@ export const setMyAvatar = mutation({
   },
 });
 
-/** Set (or clear) the current user's profile cover image. */
 export const setMyProfileCover = mutation({
   args: { storageId: v.optional(v.id("_storage")) },
   returns: v.union(v.string(), v.null()),
@@ -100,7 +85,6 @@ export const setMyProfileCover = mutation({
   },
 });
 
-/** Set (or clear) a company's logo. Caller must administer the company. */
 export const setCompanyLogo = mutation({
   args: {
     companyId: v.id("companies"),
@@ -126,7 +110,6 @@ export const setCompanyLogo = mutation({
   },
 });
 
-/** Set (or clear) a company's cover image. Caller must administer it. */
 export const setCompanyCover = mutation({
   args: {
     companyId: v.id("companies"),

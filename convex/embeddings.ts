@@ -8,27 +8,10 @@ import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { getUserByIdentity, getProfileForUser } from "./model";
 
-/**
- * Vector-embedding-based job match scoring.
- *
- * Embeddings come from the Vercel AI Gateway (OpenAI-compatible) via plain
- * fetch — no new npm deps, no "use node". The default Convex V8 action runtime
- * supports fetch, so `embedJobs` / `ensureMyProfileEmbedding` are ordinary
- * actions.
- *
- * Model: openai/text-embedding-3-small (1536 dimensions).
- */
-
 const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/embeddings";
 const EMBED_MODEL = "openai/text-embedding-3-small";
-const GATEWAY_BATCH = 50; // max inputs per gateway call
+const GATEWAY_BATCH = 50;
 
-// ── Module-scope helpers (not registered functions) ──────────────────
-
-/**
- * Embed a batch of texts via the Vercel AI Gateway embeddings endpoint.
- * Returns one number[] per input, in the same order.
- */
 async function embedTexts(inputs: string[]): Promise<number[][]> {
   if (inputs.length === 0) return [];
 
@@ -68,7 +51,6 @@ async function embedTexts(inputs: string[]): Promise<number[][]> {
   return data.map((d) => d.embedding);
 }
 
-/** Cosine similarity of two equal-length vectors. Returns 0 for degenerate input. */
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length === 0 || a.length !== b.length) return 0;
   let dot = 0;
@@ -83,9 +65,6 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
-// ── Jobs: backfill embeddings ────────────────────────────────────────
-
-/** Jobs that still need an embedding, with the text to embed. */
 export const jobsToEmbed = internalQuery({
   args: {},
   returns: v.array(
@@ -105,7 +84,6 @@ export const jobsToEmbed = internalQuery({
   },
 });
 
-/** Persist a computed job embedding. */
 export const setJobEmbedding = internalMutation({
   args: {
     jobId: v.id("jobs"),
@@ -118,13 +96,6 @@ export const setJobEmbedding = internalMutation({
   },
 });
 
-/**
- * Backfill embeddings for every job that lacks one. Batches gateway calls to
- * stay under the request-size limit. Idempotent: re-running only touches jobs
- * that are still missing an embedding.
- *
- * Run with: `npx convex run embeddings:embedJobs`
- */
 export const embedJobs = action({
   args: {},
   returns: v.object({ embedded: v.number() }),
@@ -151,13 +122,6 @@ export const embedJobs = action({
   },
 });
 
-// ── Profile: ensure the current user's embedding ─────────────────────
-
-/**
- * The current user's profile-embedding input. Returns null when there is no
- * authenticated user. `hasCurrent` is true when the stored embedding already
- * matches the current text (so no re-embed is needed).
- */
 export const myProfileEmbeddingInput = internalQuery({
   args: {},
   returns: v.union(
@@ -197,7 +161,6 @@ export const myProfileEmbeddingInput = internalQuery({
   },
 });
 
-/** Persist a computed profile embedding + the text it was derived from. */
 export const setProfileEmbedding = internalMutation({
   args: {
     profileId: v.id("profiles"),
@@ -214,12 +177,6 @@ export const setProfileEmbedding = internalMutation({
   },
 });
 
-/**
- * Ensure the current user's profile has an up-to-date embedding. No-op (returns
- * { updated: false }) when unauthenticated, when there is no profile, or when
- * the stored embedding already matches the current profile text. Called from the
- * client on the Jobs page so match scores are populated.
- */
 export const ensureMyProfileEmbedding = action({
   args: {},
   returns: v.object({ updated: v.boolean() }),

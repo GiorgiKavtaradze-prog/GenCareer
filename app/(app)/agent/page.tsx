@@ -14,7 +14,6 @@ const PRO_PERKS = [
 
 export default async function AgentPage() {
   const pro = await isPro();
-
   if (!pro) {
     return (
       <div className="mx-auto max-w-lg py-10 text-center">
@@ -48,7 +47,6 @@ export default async function AgentPage() {
       </div>
     );
   }
-
   return (
     <Suspense fallback={<div className="py-10 text-center text-muted-foreground">Loading…</div>}>
       <AgentChat />

@@ -57,7 +57,7 @@ export function PostComposer({
       let imageStorageId;
       if (image) {
         imageStorageId = (await upload(image.file)) ?? undefined;
-        if (imageStorageId === undefined) return; // upload error already toasted
+        if (imageStorageId === undefined) return;
       }
       await createPost({ content: text, kind: kind as never, imageStorageId });
       setContent("");
@@ -90,7 +90,6 @@ export function PostComposer({
 
           {image && (
             <div className="relative mt-2 overflow-hidden rounded-lg border">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={image.preview}
                 alt="Attached"

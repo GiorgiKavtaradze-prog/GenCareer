@@ -46,7 +46,6 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* Landing-page (marketing) palette — warm paper & ink, fixed-theme */
   --color-paper: oklch(0.977 0.006 84);
   --color-paper-deep: oklch(0.952 0.011 84);
   --color-ink: oklch(0.235 0.012 262);
@@ -56,7 +55,6 @@
   --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
 }
 
-/* Warm "paper & ink" theme — matches the landing page design language */
 :root {
   --background: oklch(0.977 0.006 84);
   --foreground: oklch(0.235 0.012 262);
@@ -137,17 +135,12 @@
     @apply font-sans;
   }
 }
-/* Clerk checkout / subscription-details drawers portal into <body> with a
-   z-index below the sticky top nav (z-40), so the drawer header gets hidden
-   behind it. Lift every Clerk drawer above the nav. */
 .cl-drawerRoot,
 .cl-drawerBackdrop,
 .cl-drawerContent,
 .cl-drawerConfirmationRoot {
   z-index: 60 !important;
 }
-
-/* ===== Landing page (marketing) — namespaced lp-* ===== */
 
 html:has(.lp) {
   scroll-behavior: smooth;
@@ -189,7 +182,6 @@ html:has(.lp) {
   background: color-mix(in oklch, var(--color-apricot) 55%, transparent);
 }
 
-/* Print-grain overlay for the whole marketing page */
 .lp-grain::after {
   content: "";
   position: fixed;
@@ -202,7 +194,6 @@ html:has(.lp) {
   background-size: 160px 160px;
 }
 
-/* Above-the-fold load stagger */
 .lp-stagger > * {
   animation: lp-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -236,7 +227,6 @@ html:has(.lp) {
   animation-play-state: paused;
 }
 
-/* Scroll-triggered reveal (class toggled by <Reveal/>) */
 .lp-reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -249,7 +239,6 @@ html:has(.lp) {
   transform: none;
 }
 
-/* Apricot highlighter sweep behind key words */
 .lp-hl {
   background-image: linear-gradient(
     to top,

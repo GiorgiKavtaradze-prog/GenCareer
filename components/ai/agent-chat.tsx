@@ -23,8 +23,6 @@ const SUGGESTED = [
   "Create a 90-day plan to become a Next.js AI Engineer",
 ];
 
-// Loose part typing — Eve parts follow the AI SDK UIMessage convention plus
-// eve tool metadata; we read fields defensively.
 type AnyPart = {
   type: string;
   text?: string;
@@ -66,14 +64,12 @@ export function AgentChat() {
 
   const busy = agent.status === "submitted" || agent.status === "streaming";
 
-  // Auto-run a prompt passed via ?prompt= (deep links from Jobs/Profile/Outreach).
   useEffect(() => {
     const prompt = params.get("prompt");
     if (prompt && !autoSent.current) {
       autoSent.current = true;
       void agent.send({ message: prompt });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -98,8 +94,6 @@ export function AgentChat() {
   }[];
   const hasMessages = messages.length > 0;
 
-  // Show a "Thinking" indicator whenever the agent is working and hasn't started
-  // streaming visible text yet (covers submitted + tool-running phases).
   const lastMessage = messages[messages.length - 1];
   const streamingText =
     lastMessage?.role === "assistant" &&
@@ -258,8 +252,6 @@ const TOOL_LABELS: Record<string, string> = {
   create_career_plan: "Drafted a career plan",
 };
 
-// Declared subagents surface as tool calls by their bare directory name. These
-// get the full SubagentCard delegation treatment instead of a plain activity chip.
 const SUBAGENTS: Record<string, { name: string; tagline: string }> = {
   "job-scout": { name: "Job Scout", tagline: "Ranking your best-fit jobs" },
   "profile-writer": {
@@ -333,13 +325,12 @@ function PartView({
         />
       );
     }
-    // Subagent delegation — a distinct named card, not a mere activity chip.
+
     const subagent = part.toolName ? SUBAGENTS[part.toolName] : undefined;
     if (subagent) {
       return <SubagentCard part={part} subagent={subagent} busy={busy} />;
     }
 
-    // Rich job cards once ranked matches arrive from get_relevant_jobs.
     if (part.toolName === "get_relevant_jobs") {
       const jobs = extractJobs(part.output ?? part.result);
       const targetRole =
@@ -348,9 +339,6 @@ function PartView({
       if (visibleJobs.length > 0) return <JobCards jobs={visibleJobs} />;
     }
 
-    // Tool / subagent activity — a subtle chip, only for known tools. Show a
-    // spinner while it's still running and a check once it has output, so the
-    // "Thinking" phase shows visible progress (including subagent delegation).
     const label = part.toolName ? TOOL_LABELS[part.toolName] : undefined;
     if (!label) return null;
     const done = part.state === "output-available" || !busy;
@@ -369,12 +357,7 @@ function PartView({
   return null;
 }
 
-/**
- * Delegation indicator: a distinct card shown whenever the root agent hands a
- * task to a specialist subagent — names the specialist, shows the brief it was
- * given, and tracks live status. Job Scout's structured shortlist additionally
- * renders as rich job cards underneath once it returns.
- */
+
 function SubagentCard({
   part,
   subagent,
@@ -521,7 +504,6 @@ function humanize(key: string) {
     .trim();
 }
 
-/** Human-readable preview of what a save_* tool is about to persist. */
 function ApprovalPreview({ input }: { input: unknown }) {
   if (!input || typeof input !== "object") return null;
   const entries = Object.entries(input as Record<string, unknown>).filter(
@@ -582,9 +564,9 @@ function ApprovalCard({
   const options = request.options?.length
     ? request.options
     : [
-        { id: "approve", label: "Approve & save" },
-        { id: "deny", label: "Reject" },
-      ];
+      { id: "approve", label: "Approve & save" },
+      { id: "deny", label: "Reject" },
+    ];
 
   return (
     <div className="rounded-2xl border border-primary/40 bg-primary/5 p-4">
@@ -734,7 +716,6 @@ function JobCard({ job }: { job: Job }) {
     </>
   );
 
-  // Link into the Jobs page detail view (?job=<id>) when we have the id.
   if (job.jobId) {
     return (
       <Link href={`/jobs?job=${job.jobId}`} className={cardClass}>

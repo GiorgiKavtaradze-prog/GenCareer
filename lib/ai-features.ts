@@ -1,9 +1,3 @@
-/**
- * Clerk Billing feature slugs for the Pro AI features.
- * Client-safe (no server-only imports) so both UI gating (Clerk `has()` in client
- * components) and server gating (lib/entitlements.ts) can share them.
- * Configure these in Clerk Dashboard → Billing → Plans → Pro → Features.
- */
 export const AI_FEATURES = {
   profile_optimizer: "ai_profile_optimizer",
   job_matcher: "ai_job_matcher",
@@ -15,11 +9,5 @@ export type AiFeature = keyof typeof AI_FEATURES;
 
 export const PRO_PLAN = "pro";
 
-/**
- * Org-based billing (Clerk Billing for Organizations).
- * `COMPANY_PRO_PLAN` is the plan slug configured in Clerk Dashboard →
- * Billing → Plans (for organizations). Free companies can keep up to
- * `FREE_OPEN_JOB_LIMIT` jobs open at once; Company Pro removes the cap.
- */
 export const COMPANY_PRO_PLAN = "company_pro";
 export const FREE_OPEN_JOB_LIMIT = 3;
