@@ -12,13 +12,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { timeAgo } from "@/lib/format";
-
 export default function OutreachPage() {
   const drafts = useQuery(api.drafts.getMyOutreachDrafts, {});
   const deleteDraft = useMutation(api.drafts.deleteOutreachDraft);
   const { isPro: personalPro } = usePersonalPro();
   const outreachLocked = !personalPro;
-
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="flex items-center justify-between">
@@ -26,7 +24,6 @@ export default function OutreachPage() {
           Outreach
         </h1>
       </div>
-
       <div className="rounded-2xl border bg-card p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -51,11 +48,9 @@ export default function OutreachPage() {
           />
         </div>
       </div>
-
       <h2 className="pt-2 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
         Your drafts
       </h2>
-
       {drafts === undefined ? (
         <div className="space-y-3">
           {[0, 1].map((i) => (
