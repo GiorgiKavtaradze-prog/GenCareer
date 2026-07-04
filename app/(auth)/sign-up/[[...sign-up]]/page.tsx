@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Briefcase, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { localRedirectPath } from "@/lib/safe-redirect";
-
 export default async function SignUpPage({
   searchParams,
 }: {
@@ -23,7 +22,6 @@ export default async function SignUpPage({
         : (localRedirectPath(redirect_url) ?? "/feed"),
     );
   }
-
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-5">
       <div className="grid w-full grid-cols-2 gap-2 rounded-xl border bg-card p-1.5">

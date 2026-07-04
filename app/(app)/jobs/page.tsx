@@ -37,12 +37,10 @@ import {
   seniorityLabel,
   workModeLabel,
 } from "@/lib/format";
-
 function JobsInner() {
   const params = useSearchParams();
   const { isPro: personalPro } = usePersonalPro();
   const jobMatcherLocked = !personalPro;
-
   const [tab, setTab] = useState<string>("browse");
   const [search, setSearch] = useState(params.get("q") ?? "");
   const [seniority, setSeniority] = useState<string>("all");
@@ -50,12 +48,10 @@ function JobsInner() {
   const [selected, setSelected] = useState<Id<"jobs"> | null>(
     (params.get("job") as Id<"jobs"> | null) ?? null
   );
-
   const ensureMyProfileEmbedding = useAction(api.embeddings.ensureMyProfileEmbedding);
   useEffect(() => {
     void ensureMyProfileEmbedding().catch(() => { });
   }, [ensureMyProfileEmbedding]);
-
   const browseJobs = useQuery(
     api.jobs.getJobs,
     tab === "browse"
@@ -77,15 +73,12 @@ function JobsInner() {
       : "skip"
   );
   const companyMatches = searchMatches?.companies ?? [];
-
   const jobs = tab === "saved" ? savedJobs : browseJobs;
-
   const activeId = selected ?? jobs?.[0]?._id ?? null;
   const detail = useQuery(
     api.jobs.getJobById,
     activeId ? { jobId: activeId } : "skip"
   );
-
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="space-y-3">
@@ -112,7 +105,6 @@ function JobsInner() {
             My applications
           </Button>
         </div>
-
         {tab === "browse" && (
           <div className="space-y-2 rounded-xl border bg-card p-3">
             <div className="relative">
@@ -154,7 +146,6 @@ function JobsInner() {
             </div>
           </div>
         )}
-
         {tab === "browse" && companyMatches.length > 0 && (
           <div className="rounded-xl border bg-card p-3">
             <p className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -181,7 +172,6 @@ function JobsInner() {
             </div>
           </div>
         )}
-
         {jobs === undefined ? (
           <div className="space-y-3">
             {[0, 1, 2, 3].map((i) => (
@@ -276,7 +266,6 @@ function JobsInner() {
                   </div>
                 </div>
               </div>
-
               <ApplyButton
                 jobId={detail._id}
                 jobTitle={detail.title}
@@ -284,7 +273,6 @@ function JobsInner() {
                 appliedByMe={detail.appliedByMe}
                 closed={detail.status === "closed"}
               />
-
               <AiActionButton
                 locked={jobMatcherLocked}
                 label="Match me with AI"
@@ -292,7 +280,6 @@ function JobsInner() {
                 lockedTitle="AI Job Matcher"
                 lockedDescription="See your match score and exactly which skills you're missing for this role."
               />
-
               <div>
                 <p className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   Required skills
@@ -305,7 +292,6 @@ function JobsInner() {
                   ))}
                 </div>
               </div>
-
               <div>
                 <p className="mb-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   About the role
@@ -314,7 +300,6 @@ function JobsInner() {
                   {detail.description}
                 </p>
               </div>
-
               {detail.recruiter && (
                 <div className="rounded-xl border p-3 text-sm">
                   <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -339,7 +324,6 @@ function JobsInner() {
     </div>
   );
 }
-
 export default function JobsPage() {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full rounded-xl" />}>

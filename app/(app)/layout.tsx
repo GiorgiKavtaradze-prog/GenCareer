@@ -1,6 +1,5 @@
 import { TopNav } from "@/components/layout/top-nav";
 import { EnsureUser } from "@/components/layout/ensure-user";
-
 export default function AppLayout({
   children,
 }: {

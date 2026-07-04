@@ -4,10 +4,7 @@ export const AI_FEATURES = {
   outreach_writer: "ai_outreach_writer",
   career_plan: "ai_career_plan",
 } as const;
-
 export type AiFeature = keyof typeof AI_FEATURES;
-
 export const PRO_PLAN = "pro";
-
 export const COMPANY_PRO_PLAN = "company_pro";
 export const FREE_OPEN_JOB_LIMIT = 3;

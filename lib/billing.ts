@@ -1,6 +1,5 @@
 import type { ClerkClient } from "@clerk/backend";
 import { PRO_PLAN, COMPANY_PRO_PLAN } from "./ai-features";
-
 export const ENTITLED_STATUSES = new Set(["active", "past_due"]);
 
 export async function userSubscriptionIsPro(

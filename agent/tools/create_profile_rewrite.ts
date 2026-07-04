@@ -2,11 +2,6 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { eveConvex } from "../lib/eve-helpers";
 
-/**
- * Proposes an improved profile. The model generates the new copy and passes it in;
- * the tool attaches the user's CURRENT profile so the UI can render an old-vs-new diff.
- * No side effect — persisting happens via save_profile_draft (which requires approval).
- */
 export default defineTool({
   description:
     "Propose an improved profile for a target role. You (the model) write the new headline, about section, experience bullets, suggested skills, and a short explanation; the tool returns them alongside the user's current profile for an old-vs-new comparison. Does NOT save — call save_profile_draft after the user approves.",

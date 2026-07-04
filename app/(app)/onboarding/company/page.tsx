@@ -18,15 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 const COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
-
 export default function CompanyOnboardingPage() {
   const router = useRouter();
   const { organization: activeOrg, isLoaded: orgLoaded } = useOrganization();
   const myCompany = useQuery(api.companies.getMyCompany, {});
   const createCompany = useMutation(api.companies.createCompany);
-
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
   const [size, setSize] = useState("1-10");
@@ -34,13 +31,11 @@ export default function CompanyOnboardingPage() {
   const [website, setWebsite] = useState("");
   const [about, setAbout] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
   const hasCompany = myCompany !== undefined && myCompany !== null;
   useEffect(() => {
     if (hasCompany) router.replace("/company");
   }, [hasCompany, router]);
   if (hasCompany) return null;
-
   if (!orgLoaded || myCompany === undefined) {
     return (
       <div className="mx-auto flex max-w-xl justify-center py-16">
@@ -48,7 +43,6 @@ export default function CompanyOnboardingPage() {
       </div>
     );
   }
-
   if (!activeOrg) {
     return (
       <div className="mx-auto max-w-xl">
@@ -77,10 +71,8 @@ export default function CompanyOnboardingPage() {
       </div>
     );
   }
-
   const org = activeOrg;
   const companyName = name.trim() || org.name;
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!companyName) {
@@ -102,7 +94,6 @@ export default function CompanyOnboardingPage() {
         websiteUrl: website.trim() || undefined,
         orgId: org.id,
       });
-
       toast.success("Company created — welcome aboard!");
       router.push("/company");
     } catch (err) {
@@ -112,7 +103,6 @@ export default function CompanyOnboardingPage() {
       setSubmitting(false);
     }
   }
-
   return (
     <div className="mx-auto max-w-xl">
       <div className="mb-6 flex items-center gap-3">
@@ -129,7 +119,6 @@ export default function CompanyOnboardingPage() {
           </p>
         </div>
       </div>
-
       <form
         onSubmit={onSubmit}
         className="space-y-4 rounded-2xl border bg-card p-5"
@@ -148,7 +137,6 @@ export default function CompanyOnboardingPage() {
             </p>
           )}
         </div>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="c-industry">Industry</Label>
@@ -175,7 +163,6 @@ export default function CompanyOnboardingPage() {
             </Select>
           </div>
         </div>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="c-location">Location</Label>
@@ -197,7 +184,6 @@ export default function CompanyOnboardingPage() {
             />
           </div>
         </div>
-
         <div className="space-y-1.5">
           <Label htmlFor="c-about">About</Label>
           <Textarea
@@ -208,7 +194,6 @@ export default function CompanyOnboardingPage() {
             placeholder="What does your company do? Who are you hiring?"
           />
         </div>
-
         <Button type="submit" disabled={submitting} className="w-full gap-1.5">
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -218,7 +203,6 @@ export default function CompanyOnboardingPage() {
           Create company
         </Button>
       </form>
-
       <p className="mt-3 text-center text-xs text-muted-foreground">
         You can upload a logo and cover image from the company dashboard after
         this step.

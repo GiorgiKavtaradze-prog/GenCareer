@@ -1,10 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-/**
- * Structures a recruiter-outreach draft the model has written, for card rendering.
- * No side effect — persist via save_outreach_draft (requires approval).
- */
 export default defineTool({
   description:
     "Structure an outreach draft you've written for a specific job/recruiter: a short connection message, a longer recruiter DM, and an optional subject line. Returns them for review. Does NOT save — call save_outreach_draft after the user approves.",
