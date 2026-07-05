@@ -2,9 +2,7 @@
 
 import { useSubscription } from "@clerk/nextjs/experimental";
 import { PRO_PLAN, COMPANY_PRO_PLAN } from "@/lib/ai-features";
-
 const ENTITLED_STATUSES = new Set(["active", "past_due"]);
-
 function subscriptionHasPlan(
   data: ReturnType<typeof useSubscription>["data"],
   slug: string,
@@ -15,12 +13,10 @@ function subscriptionHasPlan(
     ) ?? false
   );
 }
-
 export function usePersonalPro(): { isPro: boolean; isLoaded: boolean } {
   const { data, isLoading } = useSubscription({ for: "user" });
   return { isPro: subscriptionHasPlan(data, PRO_PLAN), isLoaded: !isLoading };
 }
-
 export function useCompanyPro(): { isPro: boolean; isLoaded: boolean } {
   const { data, isLoading } = useSubscription({ for: "organization" });
   return {
